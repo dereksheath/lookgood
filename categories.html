@@ -11,7 +11,7 @@ title: Categories
     {% for cat in cats %}
       {% assign name = cat[0] %}
       <li>
-        <a href="{{ '/category/' | append: name | append: '/' | relative_url }}">{{ name }}</a>
+        <a href="{{ '/category.html?c=' | append: name | relative_url }}">{{ name }}</a>
         ({{ cat[1].size }})
       </li>
     {% endfor %}
