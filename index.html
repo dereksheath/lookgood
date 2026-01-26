@@ -4,9 +4,14 @@ title: Home
 ---
 
 {% for post in site.posts %}
-  <div class="post">
+  <div class="post feeditem">
 
-    {% if post.gallery_dir and post.cover %}
+    {% if post.feed_image %}
+      <a href="{{ post.url | relative_url }}">
+        <img class="feedcover" src="{{ post.feed_image | relative_url }}" alt="">
+      </a>
+    {% elsif post.gallery_dir and post.cover %}
+      <!-- fallback: use gallery cover if you didn’t set a separate feed header -->
       <a href="{{ post.url | relative_url }}">
         <img class="feedcover"
              src="{{ '/img/' | append: post.gallery_dir | append: '/full/' | append: post.cover | relative_url }}"
@@ -14,7 +19,9 @@ title: Home
       </a>
     {% endif %}
 
-    <h2><a href="{{ post.url | relative_url }}">{{ post.title }}</a></h2>
+    <h2 class="feedtitle">
+      <a href="{{ post.url | relative_url }}">{{ post.title }}</a>
+    </h2>
 
     <div class="meta">
       Posted {{ post.date | date: "%b %e, %Y" }}
@@ -29,6 +36,10 @@ title: Home
     {% if post.intro %}
       <div class="intro">{{ post.intro }}</div>
     {% endif %}
+
+    <div class="readmore">
+      <a href="{{ post.url | relative_url }}">Full gallery click here!</a>
+    </div>
 
   </div>
 {% endfor %}
