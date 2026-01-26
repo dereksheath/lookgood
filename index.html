@@ -5,7 +5,17 @@ title: Home
 
 {% for post in site.posts %}
   <div class="post">
+
+    {% if post.gallery_dir and post.cover %}
+      <a href="{{ post.url | relative_url }}">
+        <img class="feedcover"
+             src="{{ '/img/' | append: post.gallery_dir | append: '/full/' | append: post.cover | relative_url }}"
+             alt="">
+      </a>
+    {% endif %}
+
     <h2>{{ post.title }}</h2>
+
     <div class="meta">
       Posted {{ post.date | date: "%b %e, %Y" }}
       {% if post.categories and post.categories.size > 0 %}
@@ -17,15 +27,9 @@ title: Home
       | <a href="{{ post.url | relative_url }}">Full gallery click here!</a>
     </div>
 
-    {% if post.gallery and post.gallery.size > 0 %}
-      <div class="thumbgrid">
-        {% assign limit_count = 8 %}
-        {% for item in post.gallery limit: limit_count %}
-          <a href="{{ post.url | relative_url }}">
-            <img src="{{ item.thumb | relative_url }}" alt="">
-          </a>
-        {% endfor %}
-      </div>
+    {% if post.intro %}
+      <div class="intro">{{ post.intro }}</div>
     {% endif %}
+
   </div>
 {% endfor %}
