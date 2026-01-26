@@ -10,14 +10,10 @@ title: Category
 
 <script>
 (function(){
-  // read category name from URL like /category/Fashionistas/
-  var parts = location.pathname.split('/').filter(Boolean);
-  var name = decodeURIComponent(parts[parts.length - 1] || '');
-  if(!name){ name = 'Category'; }
-
+  var params = new URLSearchParams(location.search);
+  var name = params.get('c') || 'Category';
   document.getElementById('catTitle').innerText = name;
 
-  // Jekyll injects categories data as JSON-ish object via Liquid
   var data = {
     {% for cat in site.categories %}
       "{{ cat[0] | escape }}": [
