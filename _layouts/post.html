@@ -1,0 +1,45 @@
+---
+layout: default
+---
+<div class="post">
+  <h2>{{ page.title }}</h2>
+
+  <div class="meta">
+    Posted {{ page.date | date: "%b %e, %Y" }}
+    {% if page.categories and page.categories.size > 0 %}
+      in
+      {% for c in page.categories %}
+        <a href="{{ '/category.html?c=' | append: c | relative_url }}">{{ c }}</a>{% unless forloop.last %}, {% endunless %}
+      {% endfor %}
+    {% endif %}
+    {% if page.external_link %} | <a href="{{ page.external_link }}">Link</a>{% endif %}
+  </div>
+
+  {% if page.intro %}
+    <div class="intro">{{ page.intro }}</div>
+  {% endif %}
+
+  {% if page.gallery %}
+    <div class="thumbgrid">
+      {% for item in page.gallery %}
+        <a href="{{ item.full | relative_url }}">
+          <img src="{{ item.thumb | relative_url }}" alt="">
+        </a>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <div class="postbody">
+    {{ content }}
+  </div>
+
+  <div class="postnav">
+    {% if page.previous %}
+      ← <a href="{{ page.previous.url | relative_url }}">{{ page.previous.title }}</a>
+    {% endif %}
+    <span class="spacer"></span>
+    {% if page.next %}
+      <a href="{{ page.next.url | relative_url }}">{{ page.next.title }}</a> →
+    {% endif %}
+  </div>
+</div>
