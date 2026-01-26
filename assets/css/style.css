@@ -22,6 +22,12 @@ a:hover{ color:#ff4bb2; }
   margin-bottom:14px;
 }
 
+.headerimg{
+  display:block;
+  width:100%;
+  height:auto;
+}
+
 #brand{
   color:#ff4bb2;
   font-weight:bold;
