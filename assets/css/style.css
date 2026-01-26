@@ -235,3 +235,60 @@ ul.list li{
   overflow:hidden;
 }
 
+/* --- Mobile / small screens --- */
+@media (max-width: 980px){
+  /* let wrapper shrink */
+  #wrap, .wrap, #wrapper, .wrapper, #page, #container {
+    width: auto !important;
+    max-width: 920px;
+    margin: 0 auto;
+  }
+
+  /* ensure big header images scale */
+  .headerimg, .feedcover {
+    width: 100%;
+    height: auto;
+  }
+}
+
+@media (max-width: 760px){
+  /* stack columns */
+  #sidebar, .sidebar {
+    float: none !important;
+    width: auto !important;
+    margin: 0 0 15px 0 !important;
+  }
+
+  #content, .content {
+    float: none !important;
+    width: auto !important;
+  }
+
+  /* tighten padding */
+  body {
+    padding: 10px;
+  }
+
+  /* thumbnail grid: 2-up */
+  .thumbgrid{
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+  }
+  .thumbgrid img{
+    width: 100%;
+    height: auto;
+  }
+}
+
+@media (max-width: 420px){
+  /* thumbnail grid: 1-up */
+  .thumbgrid{
+    grid-template-columns: 1fr !important;
+  }
+
+  /* keep titles readable */
+  h2{
+    font-size: 20px;
+    line-height: 24px;
+  }
+}
