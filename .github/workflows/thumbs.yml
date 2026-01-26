@@ -1,0 +1,60 @@
+name: Build thumbnails
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - "img/**"
+
+jobs:
+  thumbs:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install ImageMagick
+        run: sudo apt-get update && sudo apt-get install -y imagemagick
+
+      - name: Generate thumbs
+        run: |
+          set -e
+          shopt -s globstar nullglob
+
+          made=0
+
+          # For every full image, create a thumb if missing
+          for f in img/**/full/*.{jpg,JPG,jpeg,JPEG,png,PNG}; do
+            dir="$(dirname "$f")"
+            base="$(basename "$f")"
+            parent="$(dirname "$dir")"       # img/<gallery>
+            thumbdir="$parent/thumbs"
+            thumb="$thumbdir/$base"
+
+            mkdir -p "$thumbdir"
+
+            if [ ! -f "$thumb" ]; then
+              # 320px wide thumbs, keep aspect ratio, decent compression
+              convert "$f" -auto-orient -strip -resize 320x -quality 72 "$thumb"
+              echo "Made $thumb"
+              made=1
+            fi
+          done
+
+          if [ "$made" -eq 0 ]; then
+            echo "No new thumbs needed."
+          fi
+
+      - name: Commit thumbs
+        run: |
+          git config user.name "lookgood-bot"
+          git config user.email "actions@users.noreply.github.com"
+
+          if git status --porcelain | grep -q "img/"; then
+            git add img
+            git commit -m "Auto-generate thumbnails"
+            git push
+          else
+            echo "Nothing to commit."
+          fi
