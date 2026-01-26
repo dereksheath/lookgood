@@ -252,33 +252,43 @@ ul.list li{
 }
 
 @media (max-width: 760px){
-  /* stack columns */
-  #sidebar, .sidebar {
-    float: none !important;
-    width: auto !important;
-    margin: 0 0 15px 0 !important;
+  /* keep two columns, shrink sidebar */
+  #main{
+    display:flex;
+    gap:10px;
   }
 
-  #content, .content {
-    float: none !important;
-    width: auto !important;
+  #sidebar{
+    width:20% !important;
+    min-width:90px;
   }
 
-  /* tighten padding */
-  body {
-    padding: 10px;
+  #content{
+    width:80% !important;
   }
 
-  /* thumbnail grid: 2-up */
-  .thumbgrid{
-    grid-template-columns: repeat(2, 1fr) !important;
-    gap: 8px !important;
+  /* tighter spacing */
+  body{
+    padding:10px;
   }
+
+  .box{
+    padding:8px;
+  }
+
+  /* smaller sidebar text */
+  #sidebar{
+    font-size:12px;
+    line-height:16px;
+  }
+
+  /* thumbnails adjust but still grid */
   .thumbgrid img{
-    width: 100%;
-    height: auto;
+    width:100%;
+    height:auto;
   }
 }
+
 
 @media (max-width: 420px){
   /* thumbnail grid: 1-up */
