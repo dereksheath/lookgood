@@ -14,7 +14,7 @@ title: Home
       </a>
     {% endif %}
 
-    <h2>{{ post.title }}</h2>
+    <h2><a href="{{ post.url | relative_url }}">{{ post.title }}</a></h2>
 
     <div class="meta">
       Posted {{ post.date | date: "%b %e, %Y" }}
@@ -24,7 +24,6 @@ title: Home
           <a href="{{ '/category.html?c=' | append: c | relative_url }}">{{ c }}</a>{% unless forloop.last %}, {% endunless %}
         {% endfor %}
       {% endif %}
-      | <a href="{{ post.url | relative_url }}">Full gallery click here!</a>
     </div>
 
     {% if post.intro %}
