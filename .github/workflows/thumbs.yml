@@ -6,6 +6,9 @@ on:
     paths:
       - "img/**"
 
+permissions:
+  contents: write
+
 jobs:
   thumbs:
     runs-on: ubuntu-latest
