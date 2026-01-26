@@ -5,60 +5,34 @@ title: Category
 
 <div class="post">
   <h2 id="catTitle">Category</h2>
-  <div class="meta" id="catMeta"></div>
-
-  <ul class="list" id="catList"></ul>
+  <ul class="archivelist" id="catList"></ul>
 </div>
 
 <script>
 (function(){
-  function getParam(name){
-    var m = new RegExp('[?&]' + name + '=([^&]+)').exec(window.location.search);
-    return m ? decodeURIComponent(m[1].replace(/\+/g, ' ')) : '';
-  }
+  // read category name from URL like /category/Fashionistas/
+  var parts = location.pathname.split('/').filter(Boolean);
+  var name = decodeURIComponent(parts[parts.length - 1] || '');
+  if(!name){ name = 'Category'; }
 
-  var cat = getParam('c');
-  var title = document.getElementById('catTitle');
-  var meta  = document.getElementById('catMeta');
-  var list  = document.getElementById('catList');
+  document.getElementById('catTitle').innerText = name;
 
-  if(!cat){
-    title.innerHTML = 'Category';
-    meta.innerHTML = 'No category selected.';
-    return;
-  }
-
-  title.innerHTML = cat;
-  meta.innerHTML = 'Posts filed under ' + cat + '.';
-
-  // Jekyll-rendered data (static)
-  var data = [
-    {% for post in site.posts %}
-      {
-        title: {{ post.title | jsonify }},
-        url: {{ post.url | relative_url | jsonify }},
-        date: {{ post.date | date: "%Y-%m-%d" | jsonify }},
-        cats: {{ post.categories | jsonify }}
-      }{% unless forloop.last %},{% endunless %}
+  // Jekyll injects categories data as JSON-ish object via Liquid
+  var data = {
+    {% for cat in site.categories %}
+      "{{ cat[0] | escape }}": [
+        {% for post in cat[1] %}
+          {"title":"{{ post.title | escape }}","url":"{{ post.url | relative_url }}","date":"{{ post.date | date: "%b %e, %Y" }}"}{% unless forloop.last %},{% endunless %}
+        {% endfor %}
+      ]{% unless forloop.last %},{% endunless %}
     {% endfor %}
-  ];
+  };
 
-  var out = [];
-  for(var i=0;i<data.length;i++){
-    if(data[i].cats && data[i].cats.indexOf(cat) !== -1){
-      out.push(data[i]);
-    }
-  }
-
-  if(out.length === 0){
-    list.innerHTML = '<li>No posts yet.</li>';
-    return;
-  }
-
-  var html = '';
-  for(var j=0;j<out.length;j++){
-    html += '<li><span class="date">' + out[j].date + '</span> <a href="' + out[j].url + '">' + out[j].title + '</a></li>';
-  }
-  list.innerHTML = html;
+  var list = document.getElementById('catList');
+  (data[name] || []).forEach(function(p){
+    var li = document.createElement('li');
+    li.innerHTML = '<span class="archivedate">'+p.date+'</span> <a href="'+p.url+'">'+p.title+'</a>';
+    list.appendChild(li);
+  });
 })();
 </script>
