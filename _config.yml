@@ -1,0 +1,18 @@
+title: lastnightswhatever
+tagline: "where were you last night?"
+description: "photo blog"
+url: ""          # leave blank for GitHub Pages project site; set later if you use a custom domain
+baseurl: ""      # if you publish at username.github.io, keep ""
+
+permalink: /:categories/:year/:month/:day/:title/
+markdown: kramdown
+
+# Optional: tweak these if you want
+timezone: America/Los_Angeles
+
+defaults:
+  - scope:
+      path: ""
+      type: "posts"
+    values:
+      layout: "post"
