@@ -12,18 +12,20 @@ layout: default
         <a href="{{ '/category.html?c=' | append: c | relative_url }}">{{ c }}</a>{% unless forloop.last %}, {% endunless %}
       {% endfor %}
     {% endif %}
-    {% if page.external_link %} | <a href="{{ page.external_link }}">Link</a>{% endif %}
   </div>
 
   {% if page.intro %}
     <div class="intro">{{ page.intro }}</div>
   {% endif %}
 
-  {% if page.gallery %}
+  {% if page.gallery_dir and page.images %}
     <div class="thumbgrid">
-      {% for item in page.gallery %}
-        <a href="{{ item.full | relative_url }}">
-          <img src="{{ item.thumb | relative_url }}" alt="">
+      {% for fn in page.images %}
+        <a class="lb"
+           href="{{ '/img/' | append: page.gallery_dir | append: '/full/' | append: fn | relative_url }}"
+           data-group="{{ page.gallery_dir }}">
+          <img src="{{ '/img/' | append: page.gallery_dir | append: '/thumbs/' | append: fn | relative_url }}"
+               alt="">
         </a>
       {% endfor %}
     </div>
@@ -32,14 +34,5 @@ layout: default
   <div class="postbody">
     {{ content }}
   </div>
-
-  <div class="postnav">
-    {% if page.previous %}
-      ← <a href="{{ page.previous.url | relative_url }}">{{ page.previous.title }}</a>
-    {% endif %}
-    <span class="spacer"></span>
-    {% if page.next %}
-      <a href="{{ page.next.url | relative_url }}">{{ page.next.title }}</a> →
-    {% endif %}
-  </div>
 </div>
+
