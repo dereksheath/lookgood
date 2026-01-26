@@ -1,0 +1,27 @@
+---
+layout: default
+title: Archives
+---
+
+<div class="post">
+  <h2>Archives</h2>
+  <div class="meta">Everything, in reverse order.</div>
+
+  <ul class="list">
+    {% for post in site.posts %}
+      <li>
+        <span class="date">{{ post.date | date: "%Y-%m-%d" }}</span>
+        <a href="{{ post.url | relative_url }}">{{ post.title }}</a>
+        {% if post.categories and post.categories.size > 0 %}
+          <span class="cats">
+            (
+            {% for c in post.categories %}
+              <a href="{{ '/category.html?c=' | append: c | relative_url }}">{{ c }}</a>{% unless forloop.last %}, {% endunless %}
+            {% endfor %}
+            )
+          </span>
+        {% endif %}
+      </li>
+    {% endfor %}
+  </ul>
+</div>
