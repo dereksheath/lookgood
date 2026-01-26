@@ -5,17 +5,16 @@ title: Categories
 
 <div class="post">
   <h2>Categories</h2>
-  <div class="meta">Pick your poison.</div>
 
-  <ul class="list">
+  <ul class="archivelist">
     {% assign cats = site.categories | sort %}
     {% for cat in cats %}
       {% assign name = cat[0] %}
-      {% assign posts = cat[1] %}
       <li>
-        <a href="{{ '/category.html?c=' | append: name | relative_url }}">{{ name }}</a>
-        <span class="small">({{ posts | size }})</span>
+        <a href="{{ '/category/' | append: name | append: '/' | relative_url }}">{{ name }}</a>
+        ({{ cat[1].size }})
       </li>
     {% endfor %}
   </ul>
 </div>
+
