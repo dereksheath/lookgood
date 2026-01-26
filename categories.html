@@ -1,0 +1,21 @@
+---
+layout: default
+title: Categories
+---
+
+<div class="post">
+  <h2>Categories</h2>
+  <div class="meta">Pick your poison.</div>
+
+  <ul class="list">
+    {% assign cats = site.categories | sort %}
+    {% for cat in cats %}
+      {% assign name = cat[0] %}
+      {% assign posts = cat[1] %}
+      <li>
+        <a href="{{ '/category.html?c=' | append: name | relative_url }}">{{ name }}</a>
+        <span class="small">({{ posts | size }})</span>
+      </li>
+    {% endfor %}
+  </ul>
+</div>
