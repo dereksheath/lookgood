@@ -4,24 +4,25 @@ layout: default
 <div class="post">
   <h2>{{ page.title }}</h2>
 
-<div class="meta">
-  Posted {{ post.date | date: "%b %d, %Y" }}
-</div>
-
+  <div class="meta">
+    Posted {{ page.date | date: "%b %d, %Y" }}
+  </div>
 
   {% if page.intro %}
     <div class="intro">{{ page.intro }}</div>
   {% endif %}
 
-  {% if page.gallery_dir and page.images %}
+  {% if page.gallery_dir %}
+    {% assign thumbs_path = '/img/' | append: page.gallery_dir | append: '/thumbs/' %}
     <div class="thumbgrid">
-      {% for fn in page.images %}
-        <a class="lb"
-           href="{{ '/img/' | append: page.gallery_dir | append: '/full/' | append: fn | relative_url }}"
-           data-group="{{ page.gallery_dir }}">
-          <img src="{{ '/img/' | append: page.gallery_dir | append: '/thumbs/' | append: fn | relative_url }}"
-               alt="">
-        </a>
+      {% for file in site.static_files %}
+        {% if file.path contains thumbs_path %}
+          <a class="lb"
+             href="{{ '/img/' | append: page.gallery_dir | append: '/full/' | append: file.name | relative_url }}"
+             data-group="{{ page.gallery_dir }}">
+            <img src="{{ file.path | relative_url }}" alt="">
+          </a>
+        {% endif %}
       {% endfor %}
     </div>
   {% endif %}
@@ -30,3 +31,4 @@ layout: default
     {{ content }}
   </div>
 </div>
+
