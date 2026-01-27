@@ -1,0 +1,41 @@
+---
+layout: default
+title: Category
+---
+
+<div class="post">
+  <h2 id="catTitle">Category</h2>
+  <ul class="list" id="catList"></ul>
+</div>
+
+<script>
+(function () {
+  var params = new URLSearchParams(window.location.search);
+  var name = params.get("c") || "";
+  document.getElementById("catTitle").textContent = name ? name : "Category";
+
+  var data = {
+    {% for cat in site.categories %}
+      "{{ cat[0] | escape }}": [
+        {% for post in cat[1] %}
+          {"title":"{{ post.title | escape }}","url":"{{ post.url | relative_url }}","date":"{{ post.date | date: "%b %e, %Y" }}"}{% unless forloop.last %},{% endunless %}
+        {% endfor %}
+      ]{% unless forloop.last %},{% endunless %}
+    {% endfor %}
+  };
+
+  var list = document.getElementById("catList");
+  if (!name || !data[name] || data[name].length === 0) {
+    var li = document.createElement("li");
+    li.textContent = name ? "No posts found in this category." : "Pick a category from the sidebar.";
+    list.appendChild(li);
+    return;
+  }
+
+  data[name].forEach(function (p) {
+    var li = document.createElement("li");
+    li.innerHTML = '<span class="date">' + p.date + '</span> <a href="' + p.url + '">' + p.title + '</a>';
+    list.appendChild(li);
+  });
+})();
+</script>
