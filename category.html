@@ -9,25 +9,40 @@ title: Category
 </div>
 
 <script>
-(function(){
-  var params = new URLSearchParams(location.search);
-  var name = params.get('c') || '';
-  document.getElementById('catTitle').innerText = name ? name : 'Category';
+(function () {
+  // Read ?c=Category Name
+  var params = new URLSearchParams(window.location.search);
+  var name = params.get("c") || "";
 
+  document.getElementById("catTitle").textContent = name ? name : "Category";
+
+  // Build category -> posts map at build time (Liquid renders this)
   var data = {
     {% for cat in site.categories %}
       "{{ cat[0] | escape }}": [
         {% for post in cat[1] %}
-          {"title":"{{ post.title | escape }}","url":"{{ post.url | relative_url }}"}{% unless forloop.last %},{% endunless %}
+          {
+            "title": "{{ post.title | escape }}",
+            "url": "{{ post.url | relative_url }}",
+            "date": "{{ post.date | date: "%b %e, %Y" }}"
+          }{% unless forloop.last %},{% endunless %}
         {% endfor %}
       ]{% unless forloop.last %},{% endunless %}
     {% endfor %}
   };
 
-  var list = document.getElementById('catList');
-  (data[name] || []).forEach(function(p){
-    var li = document.createElement('li');
-    li.innerHTML = '<a href="'+p.url+'">'+p.title+'</a>';
+  var list = document.getElementById("catList");
+
+  if (!name || !data[name] || data[name].length === 0) {
+    var li = document.createElement("li");
+    li.textContent = name ? "No posts found in this category." : "Pick a category from the sidebar.";
+    list.appendChild(li);
+    return;
+  }
+
+  data[name].forEach(function (p) {
+    var li = document.createElement("li");
+    li.innerHTML = '<span class="date">' + p.date + '</span> <a href="' + p.url + '">' + p.title + "</a>";
     list.appendChild(li);
   });
 })();
