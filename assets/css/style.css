@@ -35,6 +35,42 @@ a:hover{ color:#ff4bb2; }
   letter-spacing:1px;
 }
 
+/* FORCE thumb grid everywhere */
+.thumbgrid{
+  display:grid !important;
+  grid-template-columns: repeat(5, 1fr) !important;
+  gap: 8px !important;
+}
+
+.thumbgrid a{
+  display:block !important;
+  margin:0 !important;         /* kill old inline spacing */
+  border:1px solid #222 !important;
+}
+
+.thumbgrid img{
+  display:block !important;
+  width:100% !important;
+  height:auto !important;
+}
+
+/* FORCE 3-wide on phones */
+@media (max-width: 760px){
+  .thumbgrid{
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap:6px !important;
+  }
+}
+
+/* STILL 3-wide on tiny phones */
+@media (max-width: 420px){
+  .thumbgrid{
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap:6px !important;
+  }
+}
+
+
 #tagline{
   color:#aaa;
   font-size:12px;
