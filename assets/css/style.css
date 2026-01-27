@@ -112,17 +112,23 @@ a:hover{ color:#ff4bb2; }
   margin:8px 0 12px 0;
 }
 
+.thumbgrid{
+  display:grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap:8px;
+}
+
 .thumbgrid a{
-  display:inline-block;
-  margin:4px;
+  display:block;
   border:1px solid #222;
 }
 
 .thumbgrid img{
   display:block;
-  width:140px;
+  width:100%;
   height:auto;
 }
+
 
 .postbody{
   margin-top:12px;
@@ -252,11 +258,42 @@ ul.list li{
 }
 
 @media (max-width: 760px){
-  /* keep two columns, shrink sidebar */
+
+  /* keep layout */
   #main{
     display:flex;
     gap:10px;
   }
+
+  #sidebar{
+    width:20% !important;
+    min-width:90px;
+  }
+
+  #content{
+    width:80% !important;
+  }
+
+  body{
+    padding:10px;
+  }
+
+  .box{
+    padding:8px;
+  }
+
+  #sidebar{
+    font-size:12px;
+    line-height:16px;
+  }
+
+  /* 🔥 Thumbnail grid: ALWAYS 3 across minimum */
+  .thumbgrid{
+    grid-template-columns: repeat(3, 1fr);
+    gap:6px;
+  }
+}
+
 
   #sidebar{
     width:20% !important;
@@ -290,15 +327,3 @@ ul.list li{
 }
 
 
-@media (max-width: 420px){
-  /* thumbnail grid: 1-up */
-  .thumbgrid{
-    grid-template-columns: 1fr !important;
-  }
-
-  /* keep titles readable */
-  h2{
-    font-size: 20px;
-    line-height: 24px;
-  }
-}
