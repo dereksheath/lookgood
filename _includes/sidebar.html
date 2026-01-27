@@ -16,21 +16,6 @@
   </ul>
 </div>
 
-<div class="box">
-  <div class="h">CATEGORIES</div>
-
-  <ul class="list">
-    {% assign sorted_cats = site.categories | sort %}
-    {% for cat in sorted_cats %}
-      {% assign name = cat[0] %}
-      <li>
-        <a href="{{ '/category/?c=' | append: name | url_encode | relative_url }}">{{ name }}</a>
-        <span class="small">({{ cat[1].size }})</span>
-      </li>
-    {% endfor %}
-  </ul>
-</div>
-
 
 <div class="box">
   <div class="h">About</div>
