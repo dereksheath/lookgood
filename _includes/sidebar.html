@@ -24,7 +24,7 @@
     {% for cat in sorted_cats %}
       {% assign name = cat[0] %}
       <li>
-        <a href="{{ '/category.html?c=' | append: name | url_encode | relative_url }}">{{ name }}</a>
+        <a href="{{ '/category/?c=' | append: name | url_encode | relative_url }}">{{ name }}</a>
         <span class="small">({{ cat[1].size }})</span>
       </li>
     {% endfor %}
