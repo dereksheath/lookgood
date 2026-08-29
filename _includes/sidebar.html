@@ -1,19 +1,35 @@
 
 <div class="box">
-  <h3>LINKS</h3>
-  <a href="https://www.instagram.com/lookgood.party/" target="_blank" rel="noopener">Instagram</a>
-</div>
-
-<div class="box">
-  <div class="h">THE ARCHIVES</div>
+  <div class="h">Galleries</div>
 
   <ul class="list">
     {% for post in site.posts %}
+      {% if post.gallery_dir %}
       <li>
         <a href="{{ post.url | relative_url }}">{{ post.title }}</a>
       </li>
+      {% endif %}
     {% endfor %}
   </ul>
+</div>
+
+<div class="box">
+  <div class="h">Announcements</div>
+
+  <ul class="list">
+    {% for post in site.posts %}
+      {% unless post.gallery_dir %}
+      <li>
+        <a href="{{ post.url | relative_url }}">{{ post.title }}</a>
+      </li>
+      {% endunless %}
+    {% endfor %}
+  </ul>
+</div>
+
+<div class="box">
+  <div class="h">Links</div>
+  <a href="https://www.instagram.com/lookgood.party/" target="_blank" rel="noopener">Instagram</a>
 </div>
 
 
