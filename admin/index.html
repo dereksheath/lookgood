@@ -76,7 +76,7 @@
 
       <div class="box">
         <div class="lab">3. Guestbook</div>
-        <p class="hint">People sign at lookgood.party/guestbook/. GitHub will ask them to submit (they need a GitHub login). You do not need a second token. Spam or anything you do not want can be deleted here. The public page updates after a minute.</p>
+        <p class="hint">People sign at lookgood.party/guestbook/. They only use this website — they never see GitHub. To turn signatures on, add a repository secret named <strong>GUESTBOOK_TOKEN</strong> (the guestbook token, not the admin token). In the lookgood repo: Settings → Secrets and variables → Actions → New repository secret. Spam or anything you do not want can be deleted here.</p>
         <button id="gbRefreshBtn" type="button">Refresh comments</button>
         <div id="gbList" class="gblist"></div>
         <p id="gbListStatus" class="hint"></p>
