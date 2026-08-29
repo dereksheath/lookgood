@@ -1,0 +1,1 @@
+window.LOOKGOOD_GUESTBOOK_AUTH = "";

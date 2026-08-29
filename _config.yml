@@ -16,3 +16,8 @@ defaults:
       type: "posts"
     values:
       layout: "post"
+
+collections:
+  guestbook:
+    output: false
+

@@ -73,6 +73,26 @@
         </form>
         <div id="statusBox" class="status" hidden></div>
       </div>
+
+      <div class="box">
+        <div class="lab">3. Guestbook</div>
+        <p class="hint">People sign at lookgood.party/guestbook/. To turn that on, make a <strong>second</strong> GitHub token that can only create issues on the lookgood repository — not edit files. Paste it below. This one does go on the public guestbook page. Do not use the same token you saved in step 1.</p>
+        <form id="gbTokenForm">
+          <label for="gbTokenInput">Guestbook token (issues only)</label>
+          <input id="gbTokenInput" type="password" autocomplete="off" spellcheck="false">
+          <div class="row" style="margin-top:10px">
+            <button class="primary" type="submit">Turn on the guestbook</button>
+            <button id="gbTokenOffBtn" type="button">Turn off the guestbook</button>
+          </div>
+        </form>
+        <p id="gbTokenStatus" class="hint"></p>
+
+        <div class="lab">Remove comments</div>
+        <p class="hint">Spam or anything you do not want can be deleted here. The public page updates after a minute.</p>
+        <button id="gbRefreshBtn" type="button">Refresh comments</button>
+        <div id="gbList" class="gblist"></div>
+        <p id="gbListStatus" class="hint"></p>
+      </div>
     </div>
 
   </div>
