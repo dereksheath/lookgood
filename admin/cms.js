@@ -66,6 +66,63 @@
     return s;
   };
 
+  CMS.isSafeGalleryDir = function (dir) {
+    return /^[a-z0-9][a-z0-9_-]{0,80}$/i.test(String(dir || ""));
+  };
+
+  CMS.photoPathsFor = function (galleryDir, photoNames, startIndex) {
+    var start = startIndex || 1;
+    var names = photoNames || [];
+    var paths = [];
+    for (var i = 0; i < names.length; i++) {
+      var ext = CMS.extOf(names[i]) || "jpg";
+      paths.push(
+        "img/" + galleryDir + "/full/" + CMS.pad3(start + i) + "." + ext
+      );
+    }
+    return paths;
+  };
+
+  CMS.nextPhotoNumber = function (names) {
+    var max = 0;
+    (names || []).forEach(function (name) {
+      var m = String(name || "").match(/^(\d+)\./);
+      if (!m) return;
+      var n = parseInt(m[1], 10);
+      if (n > max) max = n;
+    });
+    return max + 1;
+  };
+
+  CMS.postUrlFromPath = function (markdownPath) {
+    var m = String(markdownPath || "").match(
+      /_posts\/(\d{4})-(\d{2})-(\d{2})-(.+)\.md$/i
+    );
+    if (!m) return CMS.SITE_URL + "/";
+    return CMS.SITE_URL + "/" + m[1] + "/" + m[2] + "/" + m[3] + "/" + m[4] + "/";
+  };
+
+  CMS.parsePostFrontMatter = function (text) {
+    var raw = String(text || "").replace(/\r\n/g, "\n");
+    var m = raw.match(/^---\n([\s\S]*?)\n---/);
+    if (!m) return {};
+    function field(key) {
+      var quoted = m[1].match(
+        new RegExp("^" + key + ':\\s*"([\\s\\S]*?)"\\s*$', "m")
+      );
+      if (quoted) return quoted[1].replace(/\\"/g, '"').replace(/\\\\/g, "\\");
+      var plain = m[1].match(new RegExp("^" + key + ":\\s*(.*)$", "m"));
+      return plain ? plain[1].trim() : "";
+    }
+    var galleryDir = field("gallery_dir");
+    return {
+      title: field("title"),
+      intro: field("intro"),
+      galleryDir: galleryDir || null,
+      feedImage: field("feed_image")
+    };
+  };
+
   CMS.buildMarkdown = function (opts) {
     var lines = ["---", "title: " + CMS.yamlQuote(opts.title)];
 
@@ -98,16 +155,10 @@
     var feedImage = "/" + coverPath;
     var markdownPath = "_posts/" + date + "-" + slug + ".md";
     var photoNames = opts.photoNames || [];
-    var photoPaths = [];
-
-    if (type === "gallery") {
-      for (var i = 0; i < photoNames.length; i++) {
-        var ext = CMS.extOf(photoNames[i]) || "jpg";
-        photoPaths.push(
-          "img/" + galleryDir + "/full/" + CMS.pad3(i + 1) + "." + ext
-        );
-      }
-    }
+    var photoPaths =
+      type === "gallery"
+        ? CMS.photoPathsFor(galleryDir, photoNames, 1)
+        : [];
 
     var markdown = CMS.buildMarkdown({
       type: type,
@@ -135,6 +186,23 @@
 
   CMS.hasGalleryDir = function (markdown) {
     return /(^|\n)gallery_dir\s*:/.test(markdown);
+  };
+
+  CMS.planAppendPhotos = function (opts) {
+    var galleryDir = String(opts.galleryDir || "").trim();
+    var title = String(opts.title || galleryDir).trim();
+    var startIndex = opts.startIndex || 1;
+    var photoNames = opts.photoNames || [];
+    return {
+      type: "append",
+      title: title,
+      galleryDir: galleryDir,
+      markdownPath: opts.markdownPath || null,
+      photoPaths: CMS.photoPathsFor(galleryDir, photoNames, startIndex),
+      startIndex: startIndex,
+      postUrl: opts.postUrl || CMS.postUrlFromPath(opts.markdownPath),
+      commitMessage: "Add photos to gallery: " + title
+    };
   };
 
   CMS.bytesToBase64 = function (bytes) {
@@ -303,6 +371,103 @@
     });
   }
 
+  CMS.listGalleryPosts = function (token, fetchFn) {
+    var repo = "/repos/" + CMS.REPO_OWNER + "/" + CMS.REPO_NAME;
+    return CMS.githubRequest(
+      token,
+      "GET",
+      repo + "/contents/_posts?ref=" + CMS.BRANCH,
+      null,
+      fetchFn
+    ).then(function (items) {
+      var files = (items || []).filter(function (it) {
+        return it && it.type === "file" && /\.md$/i.test(it.name);
+      });
+      return runPool(files, 4, function (it) {
+        return CMS.githubRequest(
+          token,
+          "GET",
+          repo + "/contents/" + it.path + "?ref=" + CMS.BRANCH,
+          null,
+          fetchFn
+        ).then(function (file) {
+          var meta = CMS.parsePostFrontMatter(
+            CMS.base64ToText(file.content || "")
+          );
+          if (!meta.galleryDir || !CMS.isSafeGalleryDir(meta.galleryDir)) {
+            return null;
+          }
+          return {
+            title: meta.title || it.name,
+            galleryDir: meta.galleryDir,
+            markdownPath: it.path,
+            postUrl: CMS.postUrlFromPath(it.path)
+          };
+        });
+      }).then(function (posts) {
+        return posts.filter(function (p) {
+          return !!p;
+        });
+      });
+    });
+  };
+
+  CMS.listGalleryPhotoNames = function (token, galleryDir, fetchFn) {
+    if (!CMS.isSafeGalleryDir(galleryDir)) {
+      return Promise.reject(new Error("That gallery folder name is not valid."));
+    }
+    var repo = "/repos/" + CMS.REPO_OWNER + "/" + CMS.REPO_NAME;
+    var dirPath = "img/" + galleryDir + "/full";
+    return CMS.githubRequest(
+      token,
+      "GET",
+      repo + "/contents/" + dirPath + "?ref=" + CMS.BRANCH,
+      null,
+      fetchFn
+    )
+      .then(function (items) {
+        return (items || [])
+          .filter(function (it) {
+            return it && it.type === "file";
+          })
+          .map(function (it) {
+            return it.name;
+          });
+      })
+      .catch(function (err) {
+        if (err && err.status === 404) return [];
+        if (err && (err.status === 403 || err.status === 422)) {
+          return listGalleryPhotoNamesViaTree(token, galleryDir, fetchFn);
+        }
+        throw err;
+      });
+  };
+
+  function listGalleryPhotoNamesViaTree(token, galleryDir, fetchFn) {
+    var repo = "/repos/" + CMS.REPO_OWNER + "/" + CMS.REPO_NAME;
+    var prefix = "img/" + galleryDir + "/full/";
+    return CMS.githubRequest(
+      token,
+      "GET",
+      repo + "/git/trees/" + CMS.BRANCH + "?recursive=1",
+      null,
+      fetchFn
+    ).then(function (tree) {
+      return (tree.tree || [])
+        .filter(function (it) {
+          return (
+            it &&
+            it.type === "blob" &&
+            it.path.indexOf(prefix) === 0 &&
+            it.path.indexOf("/", prefix.length) === -1
+          );
+        })
+        .map(function (it) {
+          return it.path.slice(prefix.length);
+        });
+    });
+  }
+
   CMS.publishPlan = function (opts) {
     var token = opts.token;
     var plan = opts.plan;
@@ -325,9 +490,11 @@
       onProgress("Uploading pictures…");
       return runPool(files, 3, function (file, idx) {
         onProgress("Uploading file " + (idx + 1) + " of " + files.length + "…");
-        return req("POST", repo + "/git/blobs", {
-          content: file.content,
-          encoding: "base64"
+        return CMS.resolveFileContent(file).then(function (content) {
+          return req("POST", repo + "/git/blobs", {
+            content: content,
+            encoding: "base64"
+          });
         }).then(function (blob) {
           return {
             path: file.path,
@@ -377,15 +544,34 @@
   };
 
   CMS.filesFromPlan = function (plan, coverBase64, photoBase64List) {
-    var files = [
-      { path: plan.markdownPath, content: CMS.textToBase64(plan.markdown) },
-      { path: plan.coverPath, content: coverBase64 }
-    ];
+    var files = [];
+    if (plan.markdownPath && plan.markdown != null) {
+      files.push({
+        path: plan.markdownPath,
+        content: CMS.textToBase64(plan.markdown)
+      });
+    }
+    if (plan.coverPath && coverBase64) {
+      files.push({ path: plan.coverPath, content: coverBase64 });
+    }
     var photos = photoBase64List || [];
-    for (var i = 0; i < plan.photoPaths.length; i++) {
-      files.push({ path: plan.photoPaths[i], content: photos[i] });
+    var paths = plan.photoPaths || [];
+    for (var i = 0; i < paths.length; i++) {
+      files.push({ path: paths[i], content: photos[i] });
     }
     return files;
+  };
+
+  CMS.resolveFileContent = function (file) {
+    if (file && typeof file.read === "function") {
+      return Promise.resolve(file.read());
+    }
+    if (file && file.content != null) {
+      return Promise.resolve(file.content);
+    }
+    return Promise.reject(
+      new Error("Missing file content" + (file && file.path ? " for " + file.path : "."))
+    );
   };
 
   CMS.base64ToText = function (b64) {

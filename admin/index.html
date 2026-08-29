@@ -50,23 +50,34 @@
           <div class="lab">What kind of post?</div>
           <div class="types">
             <label><input type="radio" name="postType" value="announcement" checked> Announcement</label>
-            <label><input type="radio" name="postType" value="gallery"> Gallery</label>
+            <label><input type="radio" name="postType" value="gallery"> New gallery</label>
+            <label><input type="radio" name="postType" value="append"> Add photos to a gallery</label>
           </div>
-          <p class="hint">Announcement = title, text, and a cover picture. Gallery = the same, plus photos. Galleries get a photo folder and the “Full gallery click here!” link. Announcements do not.</p>
+          <p class="hint" id="typeHint">Announcement = title, text, and a cover picture. New gallery = the same, plus photos. If you have hundreds of pictures, publish a first batch, then use “Add photos to a gallery” for the rest.</p>
 
-          <label for="titleInput">Title</label>
-          <input id="titleInput" type="text" required>
+          <div id="newPostFields">
+            <label for="titleInput">Title</label>
+            <input id="titleInput" type="text">
 
-          <label for="introInput">Intro / body</label>
-          <textarea id="introInput"></textarea>
+            <label for="introInput">Intro / body</label>
+            <textarea id="introInput"></textarea>
 
-          <label for="coverInput">Cover picture (JPG or PNG)</label>
-          <input id="coverInput" class="file" type="file" accept="image/jpeg,image/png,.jpg,.jpeg,.png" required>
+            <label for="coverInput">Cover picture (JPG or PNG)</label>
+            <input id="coverInput" class="file" type="file" accept="image/jpeg,image/png,.jpg,.jpeg,.png">
+          </div>
+
+          <div id="appendFields" hidden>
+            <label for="gallerySelect">Existing gallery</label>
+            <select id="gallerySelect">
+              <option value="">Save your GitHub token first</option>
+            </select>
+            <p id="gallerySelectHint" class="hint">Choose the gallery you already published. New pictures are added to that same folder; they do not replace the ones already there.</p>
+          </div>
 
           <div id="galleryFields" hidden>
             <label for="photosInput">Gallery photos (JPG or PNG)</label>
             <input id="photosInput" class="file" type="file" accept="image/jpeg,image/png,.jpg,.jpeg,.png" multiple>
-            <p class="hint">These are saved as full-size photos. The site’s usual thumbnail helper will make 320px thumbs after they are saved.</p>
+            <p id="photosCountHint" class="hint">These are saved as full-size photos. The site’s usual thumbnail helper will make 320px thumbs after they are saved. About 50 to 100 photos at a time is a safe batch if a huge upload fails.</p>
           </div>
 
           <button id="publishBtn" class="primary" type="submit">Publish to the website</button>

@@ -338,6 +338,203 @@ tests.push(
   })
 );
 
+tests.push(
+  test("next photo number continues after existing 001-style names", function () {
+    assert.strictEqual(CMS.nextPhotoNumber([]), 1);
+    assert.strictEqual(CMS.nextPhotoNumber(["001.jpg", "002.png"]), 3);
+    assert.strictEqual(CMS.nextPhotoNumber(["150.jpg", "readme.txt"]), 151);
+    assert.strictEqual(CMS.nextPhotoNumber(["009.jpg", "010.jpg"]), 11);
+    assert.strictEqual(CMS.pad3(151), "151");
+    assert.strictEqual(CMS.pad3(7), "007");
+  })
+);
+
+tests.push(
+  test("append plan numbers new files after the last photo and does not rewrite the post", function () {
+    const plan = CMS.planAppendPhotos({
+      title: "2006 Night at El Cid - Photo Dump",
+      galleryDir: "2006-night-el-cid",
+      markdownPath: "_posts/2026-01-23-el-cid-2006-night.md",
+      startIndex: 151,
+      photoNames: ["more-a.jpg", "more-b.png"]
+    });
+    assert.strictEqual(plan.type, "append");
+    assert.deepStrictEqual(plan.photoPaths, [
+      "img/2006-night-el-cid/full/151.jpg",
+      "img/2006-night-el-cid/full/152.png"
+    ]);
+    assert.ok(!plan.markdown);
+    assert.ok(!plan.coverPath);
+    assert.ok(/Add photos to gallery/.test(plan.commitMessage));
+    assert.strictEqual(
+      plan.postUrl,
+      "https://lookgood.party/2026/01/23/el-cid-2006-night/"
+    );
+    const files = CMS.filesFromPlan(plan, null, ["YQ==", "Yg=="]);
+    assert.deepStrictEqual(
+      files.map(function (f) {
+        return f.path;
+      }),
+      [
+        "img/2006-night-el-cid/full/151.jpg",
+        "img/2006-night-el-cid/full/152.png"
+      ]
+    );
+  })
+);
+
+tests.push(
+  test("front matter parser finds gallery_dir on existing posts", function () {
+    const meta = CMS.parsePostFrontMatter(
+      '---\ntitle: "2006 Night at El Cid - Photo Dump"\nintro: "Photos."\n\nfeed_image: "/img/headers/2006-night-el-cid.jpg"\n\ngallery_dir: "2006-night-el-cid"\n---\n'
+    );
+    assert.strictEqual(meta.title, "2006 Night at El Cid - Photo Dump");
+    assert.strictEqual(meta.galleryDir, "2006-night-el-cid");
+    assert.strictEqual(CMS.isSafeGalleryDir(meta.galleryDir), true);
+    assert.strictEqual(CMS.isSafeGalleryDir("../secret"), false);
+    assert.strictEqual(CMS.isSafeGalleryDir("img/foo"), false);
+    const noGallery = CMS.parsePostFrontMatter(
+      '---\ntitle: "Flyer"\nfeed_image: "/img/headers/a.jpg"\n---\n'
+    );
+    assert.strictEqual(noGallery.galleryDir, null);
+  })
+);
+
+tests.push(
+  test("listGalleryPosts returns only posts with a gallery folder", function () {
+    const mdGallery = Buffer.from(
+      '---\ntitle: "Party Photos"\ngallery_dir: "party-photos"\n---\n'
+    ).toString("base64");
+    const mdAnnounce = Buffer.from(
+      '---\ntitle: "Flyer"\nfeed_image: "/x.jpg"\n---\n'
+    ).toString("base64");
+    const fakeFetch = function (url) {
+      const path = url.replace("https://api.github.com", "");
+      let data;
+      if (path.indexOf("/contents/_posts?") !== -1) {
+        data = [
+          { type: "file", name: "2026-01-23-party-photos.md", path: "_posts/2026-01-23-party-photos.md" },
+          { type: "file", name: "2026-01-20-flyer.md", path: "_posts/2026-01-20-flyer.md" }
+        ];
+      } else if (path.indexOf("_posts/2026-01-23-party-photos.md") !== -1) {
+        data = { content: mdGallery };
+      } else {
+        data = { content: mdAnnounce };
+      }
+      return Promise.resolve({
+        ok: true,
+        text: function () {
+          return Promise.resolve(JSON.stringify(data));
+        }
+      });
+    };
+    return CMS.listGalleryPosts("fake-token-for-test", fakeFetch).then(function (posts) {
+      assert.strictEqual(posts.length, 1);
+      assert.strictEqual(posts[0].title, "Party Photos");
+      assert.strictEqual(posts[0].galleryDir, "party-photos");
+      assert.strictEqual(posts[0].markdownPath, "_posts/2026-01-23-party-photos.md");
+    });
+  })
+);
+
+tests.push(
+  test("listGalleryPhotoNames reads existing full-size files and treats a missing folder as empty", function () {
+    const fakeFetch = function (url) {
+      const path = url.replace("https://api.github.com", "");
+      if (path.indexOf("/full") !== -1 && path.indexOf("missing-gallery") !== -1) {
+        return Promise.resolve({
+          ok: false,
+          status: 404,
+          text: function () {
+            return Promise.resolve(JSON.stringify({ message: "Not Found" }));
+          }
+        });
+      }
+      return Promise.resolve({
+        ok: true,
+        text: function () {
+          return Promise.resolve(
+            JSON.stringify([
+              { type: "file", name: "001.jpg" },
+              { type: "file", name: "002.png" },
+              { type: "dir", name: "ignore" }
+            ])
+          );
+        }
+      });
+    };
+    return CMS.listGalleryPhotoNames(
+      "fake-token-for-test",
+      "2006-night-el-cid",
+      fakeFetch
+    ).then(function (names) {
+      assert.deepStrictEqual(names, ["001.jpg", "002.png"]);
+      return CMS.listGalleryPhotoNames(
+        "fake-token-for-test",
+        "missing-gallery",
+        fakeFetch
+      );
+    }).then(function (names) {
+      assert.deepStrictEqual(names, []);
+    });
+  })
+);
+
+tests.push(
+  test("publishPlan can read files lazily so a later batch does not need every photo in memory first", function () {
+    const calls = [];
+    const fakeFetch = function (url, opts) {
+      const path = url.replace("https://api.github.com", "");
+      calls.push({ path: path, method: opts.method, body: opts.body });
+      let data = { sha: "commit1", commit: { tree: { sha: "tree1" } } };
+      if (path.indexOf("/git/blobs") !== -1) data = { sha: "blob-" + calls.length };
+      else if (path.indexOf("/git/trees") !== -1) data = { sha: "tree2" };
+      else if (path.indexOf("/git/commits") !== -1 && opts.method === "POST") {
+        data = { sha: "commit2" };
+      } else if (path.indexOf("/git/refs/heads/main") !== -1) data = { ok: true };
+      return Promise.resolve({
+        ok: true,
+        text: function () {
+          return Promise.resolve(JSON.stringify(data));
+        }
+      });
+    };
+    let reads = 0;
+    const plan = CMS.planAppendPhotos({
+      title: "Party",
+      galleryDir: "party",
+      startIndex: 3,
+      photoNames: ["c.jpg"]
+    });
+    return CMS.publishPlan({
+      token: "fake-token-for-test",
+      plan: plan,
+      files: [
+        {
+          path: plan.photoPaths[0],
+          read: function () {
+            reads += 1;
+            return Promise.resolve("Yw==");
+          }
+        }
+      ],
+      fetch: fakeFetch
+    }).then(function () {
+      assert.strictEqual(reads, 1);
+      const treeCall = calls.find(function (c) {
+        return c.path.indexOf("/git/trees") !== -1 && c.method === "POST";
+      });
+      const tree = JSON.parse(treeCall.body);
+      assert.deepStrictEqual(
+        tree.tree.map(function (t) {
+          return t.path;
+        }),
+        ["img/party/full/003.jpg"]
+      );
+    });
+  })
+);
+
 Promise.all(tests)
   .then(function () {
     console.log("\nAll CMS tests passed.");
