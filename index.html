@@ -37,9 +37,11 @@ title: Home
       <div class="intro">{{ post.intro }}</div>
     {% endif %}
 
+    {% if post.gallery_dir %}
     <div class="readmore">
       <a href="{{ post.url | relative_url }}">Full gallery click here!</a>
     </div>
+    {% endif %}
 
   </div>
 {% endfor %}
