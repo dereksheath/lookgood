@@ -275,6 +275,25 @@ tests.push(
 );
 
 tests.push(
+  test("guestbook token write check treats 422 as cannot edit files", function () {
+    const fakeFetch = function () {
+      return Promise.resolve({
+        ok: false,
+        status: 422,
+        text: function () {
+          return Promise.resolve(
+            JSON.stringify({ message: "Resource not accessible by personal access token" })
+          );
+        }
+      });
+    };
+    return CMS.tokenCanWriteFiles("gb-readonly", fakeFetch).then(function (canWrite) {
+      assert.strictEqual(canWrite, false);
+    });
+  })
+);
+
+tests.push(
   test("guestbook auth save only writes the auth js file", function () {
     const calls = [];
     const fakeFetch = function (url, opts) {

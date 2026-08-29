@@ -254,8 +254,19 @@
     if (status === 404) {
       return "GitHub could not find this website’s files. Check that the token is allowed to use the lookgood repository.";
     }
-    if (status === 409 || status === 422) {
-      return "The website files changed while saving. Wait a moment and try Publish again.";
+    if (status === 409) {
+      return "The website files changed while saving. Wait a moment and try again.";
+    }
+    if (status === 422) {
+      var msg422 = data && data.message ? String(data.message) : "";
+      if (/fast-forward|does not exist/i.test(msg422)) {
+        return "The website files changed while saving. Wait a moment and try again.";
+      }
+      if (/not accessible|Resource not accessible|Validation Failed/i.test(msg422)) {
+        return "This GitHub token does not have permission for that step.";
+      }
+      if (msg422) return "GitHub said: " + msg422;
+      return "GitHub could not save that. Wait a moment and try again.";
     }
     var msg = data && data.message ? String(data.message) : "";
     if (msg) return "GitHub said: " + msg;
@@ -305,8 +316,10 @@
 
     var repo = "/repos/" + CMS.REPO_OWNER + "/" + CMS.REPO_NAME;
 
-    onProgress("Checking the website files…");
-    return req("GET", repo + "/commits/" + CMS.BRANCH).then(function (latest) {
+    var tries = 0;
+    function attempt() {
+      onProgress("Checking the website files…");
+      return req("GET", repo + "/commits/" + CMS.BRANCH).then(function (latest) {
       var commitSha = latest.sha;
       var baseTree = latest.commit.tree.sha;
       onProgress("Uploading pictures…");
@@ -346,6 +359,21 @@
           return { commitSha: newCommit.sha, plan: plan };
         });
       });
+    }
+
+    return attempt().catch(function (err) {
+      tries += 1;
+      var msg = (err && err.data && err.data.message) || (err && err.message) || "";
+      var conflict =
+        err &&
+        (err.status === 409 ||
+          (err.status === 422 && /fast-forward|does not exist/i.test(msg)));
+      if (conflict && tries < 3) {
+        onProgress("The website changed. Trying again…");
+        return attempt();
+      }
+      throw err;
+    });
   };
 
   CMS.filesFromPlan = function (plan, coverBase64, photoBase64List) {
@@ -426,7 +454,13 @@
         return true;
       })
       .catch(function (err) {
-        if (err && (err.status === 403 || err.status === 404 || err.status === 401)) {
+        if (
+          err &&
+          (err.status === 401 ||
+            err.status === 403 ||
+            err.status === 404 ||
+            err.status === 422)
+        ) {
           return false;
         }
         throw err;
