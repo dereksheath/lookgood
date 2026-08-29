@@ -353,13 +353,13 @@
       gbTokenStatus.className = "hint bad";
       return;
     }
-    gbTokenStatus.textContent = "Checking that this token cannot edit website files…";
+    gbTokenStatus.textContent = "Checking that this token cannot change website files…";
     gbTokenStatus.className = "hint";
-    CMS.tokenCanReadFiles(gbToken)
+    CMS.tokenCanWriteFiles(gbToken)
       .then(function (canEdit) {
         if (canEdit) {
           throw new Error(
-            "That token can edit website files. Make a different token that can only create issues, then try again."
+            "That token can change website files. For Contents, choose Read-only, not Read and write, then try again."
           );
         }
         gbTokenStatus.textContent = "Saving the guestbook key to the website…";

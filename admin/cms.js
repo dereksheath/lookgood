@@ -414,19 +414,21 @@
     );
   };
 
-  CMS.tokenCanReadFiles = function (token, fetchFn) {
+  CMS.tokenCanWriteFiles = function (token, fetchFn) {
     return CMS.githubRequest(
       token,
-      "GET",
-      "/repos/" + CMS.REPO_OWNER + "/" + CMS.REPO_NAME + "/contents/_config.yml",
-      null,
+      "POST",
+      "/repos/" + CMS.REPO_OWNER + "/" + CMS.REPO_NAME + "/git/blobs",
+      { content: "x", encoding: "utf-8" },
       fetchFn
     )
       .then(function () {
         return true;
       })
       .catch(function (err) {
-        if (err && (err.status === 403 || err.status === 404)) return false;
+        if (err && (err.status === 403 || err.status === 404 || err.status === 401)) {
+          return false;
+        }
         throw err;
       });
   };
