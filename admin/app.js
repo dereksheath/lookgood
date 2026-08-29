@@ -79,6 +79,9 @@
   function updateType() {
     var type = document.querySelector('input[name="postType"]:checked').value;
     galleryFields.hidden = type !== "gallery";
+    if (type === "gallery") {
+      galleryFields.scrollIntoView({ block: "nearest", behavior: "smooth" });
+    }
   }
 
   function readFileBase64(file) {
