@@ -32,10 +32,6 @@
     var captcha = document.getElementById("gbCaptcha").value.trim().toLowerCase();
     var auth = token();
 
-    if (!auth) {
-      setStatus("bad", "The guestbook is not taking signatures yet.");
-      return;
-    }
     if (!name) {
       setStatus("bad", "Please type a name.");
       return;
@@ -46,6 +42,10 @@
     }
     if (captcha !== "dancefloor") {
       setStatus("bad", "Type the word DANCEFLOOR to prove you are a person.");
+      return;
+    }
+    if (!auth) {
+      setStatus("bad", "The guestbook is not taking signatures yet.");
       return;
     }
 
