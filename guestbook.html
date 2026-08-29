@@ -7,7 +7,6 @@ permalink: /guestbook/
 <div class="post">
   <h2>Guestbook</h2>
   <div class="meta">Sign it. Be nice. Spam gets deleted.</div>
-  <p class="intro">After you click Sign, GitHub will ask you to submit. You need to be signed in to GitHub. Your note shows up here in a minute or two — refresh this page then.</p>
 
   <form id="gbForm" class="gbform">
     <label for="gbName">Name</label>
@@ -44,4 +43,5 @@ permalink: /guestbook/
   </div>
 {% endfor %}
 
+<script src="{{ '/assets/js/guestbook-auth.js' | relative_url }}"></script>
 <script src="{{ '/assets/js/guestbook.js' | relative_url }}"></script>
