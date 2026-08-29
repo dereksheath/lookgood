@@ -442,6 +442,19 @@
     );
   };
 
+  CMS.guestbookIssueUrl = function (name, message) {
+    return (
+      "https://github.com/" +
+      CMS.REPO_OWNER +
+      "/" +
+      CMS.REPO_NAME +
+      "/issues/new?title=" +
+      encodeURIComponent("[guestbook]") +
+      "&body=" +
+      encodeURIComponent(CMS.buildGuestbookIssueBody(name, message))
+    );
+  };
+
   CMS.tokenCanWriteFiles = function (token, fetchFn) {
     return CMS.githubRequest(
       token,

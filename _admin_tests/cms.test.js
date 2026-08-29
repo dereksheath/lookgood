@@ -253,6 +253,11 @@ tests.push(
     const body = CMS.buildGuestbookIssueBody("Sam", "Hello");
     assert.ok(body.indexOf("LOOKGOOD_GUESTBOOK_V1") === 0);
     assert.ok(body.indexOf("Hello") !== -1);
+    const issueUrl = CMS.guestbookIssueUrl("Sam", "Hello");
+    assert.ok(issueUrl.indexOf("github.com/dereksheath/lookgood/issues/new") !== -1);
+    assert.ok(issueUrl.indexOf("ghp_") === -1);
+    assert.ok(issueUrl.indexOf("github_pat_") === -1);
+    assert.ok(issueUrl.indexOf("Bearer") === -1);
   })
 );
 
