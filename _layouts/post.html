@@ -2,6 +2,12 @@
 layout: default
 ---
 <div class="post">
+  {% unless page.gallery_dir %}
+    {% if page.feed_image %}
+      <img class="feedcover" src="{{ page.feed_image | relative_url }}" alt="">
+    {% endif %}
+  {% endunless %}
+
   <h2>{{ page.title }}</h2>
 
   <div class="meta">
