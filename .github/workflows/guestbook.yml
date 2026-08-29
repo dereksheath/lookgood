@@ -1,0 +1,53 @@
+name: Save guestbook signatures
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  contents: write
+  issues: write
+
+concurrency:
+  group: guestbook-ingest
+  cancel-in-progress: false
+
+jobs:
+  save:
+    if: startsWith(github.event.issue.title, '[guestbook]')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Write guestbook file
+        env:
+          ISSUE_TITLE: ${{ github.event.issue.title }}
+          ISSUE_BODY: ${{ github.event.issue.body }}
+          ISSUE_TIME: ${{ github.event.issue.created_at }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+        run: python3 .github/scripts/ingest_guestbook.py
+
+      - name: Commit and close
+        env:
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -e
+          git config user.name "lookgood-bot"
+          git config user.email "actions@users.noreply.github.com"
+
+          if git status --porcelain | grep -q "_guestbook/"; then
+            git add _guestbook
+            git commit -m "Guestbook: add comment"
+            i=0
+            while [ "$i" -lt 3 ]; do
+              git pull --rebase origin main && git push origin HEAD:main && break
+              i=$((i + 1))
+              sleep 2
+            done
+          else
+            echo "No guestbook file to commit."
+          fi
+
+          gh issue close "$ISSUE_NUMBER" --repo "$GITHUB_REPOSITORY" >/dev/null

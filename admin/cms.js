@@ -360,6 +360,144 @@
     return files;
   };
 
+  CMS.base64ToText = function (b64) {
+    var clean = String(b64 || "").replace(/\n/g, "");
+    if (typeof Buffer !== "undefined" && typeof Buffer.from === "function") {
+      return Buffer.from(clean, "base64").toString("utf8");
+    }
+    var binary = atob(clean);
+    var bytes = new Uint8Array(binary.length);
+    for (var i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+    return new TextDecoder().decode(bytes);
+  };
+
+  CMS.GUESTBOOK_DIR = "_guestbook";
+  CMS.GUESTBOOK_AUTH_PATH = "assets/js/guestbook-auth.js";
+  CMS.GUESTBOOK_CAPTCHA = "dancefloor";
+
+  CMS.captchaOk = function (value) {
+    return String(value || "").trim().toLowerCase() === CMS.GUESTBOOK_CAPTCHA;
+  };
+
+  CMS.isGuestbookFilePath = function (path) {
+    return /^_guestbook\/[A-Za-z0-9._-]+\.md$/.test(String(path || ""));
+  };
+
+  CMS.buildGuestbookAuthJs = function (token) {
+    return "window.LOOKGOOD_GUESTBOOK_AUTH = " + JSON.stringify(String(token || "")) + ";\n";
+  };
+
+  CMS.parseGuestbookMarkdown = function (text) {
+    var raw = String(text || "").replace(/\r\n/g, "\n");
+    var m = raw.match(/^---\n([\s\S]*?)\n---/);
+    if (!m) return null;
+    function field(key) {
+      var quoted = m[1].match(new RegExp("^" + key + ':\\s*"([\\s\\S]*?)"\\s*$', "m"));
+      if (quoted) return quoted[1].replace(/\\"/g, '"').replace(/\\\\/g, "\\");
+      var plain = m[1].match(new RegExp("^" + key + ":\\s*(.*)$", "m"));
+      return plain ? plain[1].trim() : "";
+    }
+    return {
+      name: field("name"),
+      message: field("message"),
+      date: field("date")
+    };
+  };
+
+  CMS.buildGuestbookIssueBody = function (name, message) {
+    return (
+      "LOOKGOOD_GUESTBOOK_V1\n" +
+      JSON.stringify({
+        name: String(name || "").slice(0, 40),
+        message: String(message || "").slice(0, 500)
+      })
+    );
+  };
+
+  CMS.tokenCanReadFiles = function (token, fetchFn) {
+    return CMS.githubRequest(
+      token,
+      "GET",
+      "/repos/" + CMS.REPO_OWNER + "/" + CMS.REPO_NAME + "/contents/_config.yml",
+      null,
+      fetchFn
+    )
+      .then(function () {
+        return true;
+      })
+      .catch(function (err) {
+        if (err && (err.status === 403 || err.status === 404)) return false;
+        throw err;
+      });
+  };
+
+  CMS.saveGuestbookAuth = function (adminToken, guestbookToken, fetchFn) {
+    var js = CMS.buildGuestbookAuthJs(guestbookToken);
+    return CMS.publishPlan({
+      token: adminToken,
+      plan: { commitMessage: "Update guestbook posting key" },
+      files: [{ path: CMS.GUESTBOOK_AUTH_PATH, content: CMS.textToBase64(js) }],
+      fetch: fetchFn
+    });
+  };
+
+  CMS.listGuestbookEntries = function (token, fetchFn) {
+    var repo = "/repos/" + CMS.REPO_OWNER + "/" + CMS.REPO_NAME;
+    return CMS.githubRequest(
+      token,
+      "GET",
+      repo + "/contents/" + CMS.GUESTBOOK_DIR + "?ref=" + CMS.BRANCH,
+      null,
+      fetchFn
+    )
+      .then(function (items) {
+        var files = (items || []).filter(function (it) {
+          return it && it.type === "file" && CMS.isGuestbookFilePath(it.path);
+        });
+        return runPool(files, 4, function (it) {
+          return CMS.githubRequest(
+            token,
+            "GET",
+            repo + "/contents/" + it.path,
+            null,
+            fetchFn
+          ).then(function (file) {
+            var parsed = CMS.parseGuestbookMarkdown(
+              CMS.base64ToText(file.content || "")
+            ) || {};
+            return {
+              path: it.path,
+              sha: file.sha,
+              name: parsed.name || it.name,
+              message: parsed.message || "",
+              date: parsed.date || ""
+            };
+          });
+        });
+      })
+      .catch(function (err) {
+        if (err && err.status === 404) return [];
+        throw err;
+      });
+  };
+
+  CMS.deleteGuestbookEntry = function (token, path, sha, fetchFn) {
+    if (!CMS.isGuestbookFilePath(path)) {
+      return Promise.reject(new Error("That is not a guestbook file."));
+    }
+    return CMS.githubRequest(
+      token,
+      "DELETE",
+      "/repos/" + CMS.REPO_OWNER + "/" + CMS.REPO_NAME + "/contents/" + path,
+      {
+        message: "Guestbook: remove comment",
+        sha: sha,
+        branch: CMS.BRANCH
+      },
+      fetchFn
+    );
+  };
+
   if (typeof module !== "undefined" && module.exports) {
     module.exports = CMS;
   } else {

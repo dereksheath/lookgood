@@ -216,6 +216,86 @@ tests.push(
   })
 );
 
+tests.push(
+  test("guestbook captcha is case-insensitive", function () {
+    assert.strictEqual(CMS.captchaOk("DANCEFLOOR"), true);
+    assert.strictEqual(CMS.captchaOk(" dancefloor "), true);
+    assert.strictEqual(CMS.captchaOk("nope"), false);
+  })
+);
+
+tests.push(
+  test("guestbook paths stay inside _guestbook", function () {
+    assert.strictEqual(CMS.isGuestbookFilePath("_guestbook/2026-08-29-120000-1.md"), true);
+    assert.strictEqual(CMS.isGuestbookFilePath("_posts/hack.md"), false);
+    assert.strictEqual(CMS.isGuestbookFilePath("_guestbook/../_posts/x.md"), false);
+    return CMS.deleteGuestbookEntry("t", "_posts/hack.md", "sha").then(
+      function () {
+        throw new Error("should reject");
+      },
+      function (err) {
+        assert.ok(/not a guestbook/i.test(err.message));
+      }
+    );
+  })
+);
+
+tests.push(
+  test("guestbook markdown parse and auth file quoting", function () {
+    const parsed = CMS.parseGuestbookMarkdown(
+      '---\nname: "Sam"\nmessage: "Yo"\ndate: "2026-08-29 12:00:00 -0700"\n---\n'
+    );
+    assert.strictEqual(parsed.name, "Sam");
+    assert.strictEqual(parsed.message, "Yo");
+    const js = CMS.buildGuestbookAuthJs('abc"def');
+    assert.strictEqual(js.indexOf("abc\"def") !== -1 || js.indexOf("abc\\\"def") !== -1, true);
+    assert.ok(js.indexOf("LOOKGOOD_GUESTBOOK_AUTH") !== -1);
+    const body = CMS.buildGuestbookIssueBody("Sam", "Hello");
+    assert.ok(body.indexOf("LOOKGOOD_GUESTBOOK_V1") === 0);
+    assert.ok(body.indexOf("Hello") !== -1);
+  })
+);
+
+tests.push(
+  test("guestbook auth save only writes the auth js file", function () {
+    const calls = [];
+    const fakeFetch = function (url, opts) {
+      const path = url.replace("https://api.github.com", "");
+      calls.push({ path: path, method: opts.method, body: opts.body });
+      let data = { sha: "commit1", commit: { tree: { sha: "tree1" } } };
+      if (path.indexOf("/git/blobs") !== -1) data = { sha: "blob1" };
+      else if (path.indexOf("/git/trees") !== -1) data = { sha: "tree2" };
+      else if (path.indexOf("/git/commits") !== -1 && opts.method === "POST") {
+        data = { sha: "commit2" };
+      } else if (path.indexOf("/git/refs/heads/main") !== -1) data = { ok: true };
+      else if (path.indexOf("/commits/main") !== -1) {
+        data = { sha: "commit1", commit: { tree: { sha: "tree1" } } };
+      }
+      return Promise.resolve({
+        ok: true,
+        text: function () {
+          return Promise.resolve(JSON.stringify(data));
+        }
+      });
+    };
+    return CMS.saveGuestbookAuth("admin-token", "gb-token", fakeFetch).then(function () {
+      const treeCall = calls.find(function (c) {
+        return c.path.indexOf("/git/trees") !== -1 && c.method === "POST";
+      });
+      const tree = JSON.parse(treeCall.body);
+      assert.deepStrictEqual(
+        tree.tree.map(function (t) {
+          return t.path;
+        }),
+        ["assets/js/guestbook-auth.js"]
+      );
+      const dumped = JSON.stringify(calls);
+      assert.ok(dumped.indexOf("admin-token") === -1);
+      assert.ok(dumped.indexOf("gb-token") === -1);
+    });
+  })
+);
+
 Promise.all(tests)
   .then(function () {
     console.log("\nAll CMS tests passed.");

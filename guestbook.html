@@ -1,0 +1,47 @@
+---
+layout: default
+title: Guestbook
+permalink: /guestbook/
+---
+
+<div class="post">
+  <h2>Guestbook</h2>
+  <div class="meta">Sign it. Be nice. Spam gets deleted.</div>
+
+  <form id="gbForm" class="gbform">
+    <label for="gbName">Name</label>
+    <input id="gbName" name="name" type="text" maxlength="40" autocomplete="name">
+
+    <label for="gbMessage">Comment</label>
+    <textarea id="gbMessage" name="message" maxlength="500"></textarea>
+
+    <label for="gbCaptcha">Type the word DANCEFLOOR</label>
+    <input id="gbCaptcha" name="captcha" type="text" maxlength="20" autocomplete="off">
+
+    <label class="gb-hp" for="gbHome">Homepage</label>
+    <input id="gbHome" class="gb-hp" name="homepage" type="text" tabindex="-1" autocomplete="off">
+
+    <div class="row">
+      <input class="searchbtn" type="submit" value="Sign the guestbook">
+    </div>
+  </form>
+  <div id="gbStatus" class="gb-status" hidden></div>
+</div>
+
+{% assign entries = site.guestbook | sort: "date" | reverse %}
+{% if entries.size == 0 %}
+  <div class="post">
+    <div class="intro">No one has signed yet. Be the first.</div>
+  </div>
+{% endif %}
+
+{% for e in entries %}
+  <div class="post gb-entry">
+    <div class="gb-name">{{ e.name | escape }}</div>
+    <div class="meta">{{ e.date | date: "%b %e, %Y" }}</div>
+    <div class="intro">{{ e.message | escape }}</div>
+  </div>
+{% endfor %}
+
+<script src="{{ '/assets/js/guestbook-auth.js' | relative_url }}"></script>
+<script src="{{ '/assets/js/guestbook.js' | relative_url }}"></script>

@@ -362,4 +362,55 @@ ul.list li{
   }
 }
 
+.gbform label{
+  display:block;
+  margin:10px 0 4px;
+  color:#ccc;
+}
+
+.gbform input[type="text"],
+.gbform textarea{
+  width:100%;
+  box-sizing:border-box;
+  background:#111;
+  color:#eee;
+  border:1px solid #333;
+  padding:4px;
+  font:12px Verdana, Arial, sans-serif;
+}
+
+.gbform textarea{
+  height:80px;
+}
+
+.gbform .row{
+  margin-top:10px;
+}
+
+.gb-hp{
+  position:absolute;
+  left:-9999px;
+  height:0;
+  width:0;
+  overflow:hidden;
+}
+
+.gb-status{
+  margin-top:10px;
+  color:#ccc;
+}
+
+.gb-status.ok{ color:#9d9; }
+.gb-status.bad{ color:#f88; }
+.gb-status.busy{ color:#aaa; }
+
+.gb-name{
+  color:#ff4bb2;
+  font-weight:bold;
+}
+
+.gb-entry{
+  margin-bottom:14px;
+}
+
 
