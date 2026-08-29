@@ -76,7 +76,7 @@
 
       <div class="box">
         <div class="lab">3. Guestbook</div>
-        <p class="hint">People sign at lookgood.party/guestbook/. They only use this website — they never see GitHub. To turn signatures on, add a repository secret named <strong>GUESTBOOK_TOKEN</strong> (the guestbook token, not the admin token). In the lookgood repo: Settings → Secrets and variables → Actions → New repository secret. Spam or anything you do not want can be deleted here.</p>
+        <p class="hint">People sign at lookgood.party/guestbook/. They only use this website — they never see GitHub. To turn signatures on, add a repository secret named <strong>GUESTBOOK_TOKEN</strong> (the guestbook token, not the admin token). Settings → Secrets and variables → Actions → New repository secret. Name must be exactly GUESTBOOK_TOKEN. Paste the token in the Secret box. Then rebuild: Actions → Deploy site → Run workflow. Wait about a minute and refresh the guestbook. Spam or anything you do not want can be deleted here.</p>
         <button id="gbRefreshBtn" type="button">Refresh comments</button>
         <div id="gbList" class="gblist"></div>
         <p id="gbListStatus" class="hint"></p>
