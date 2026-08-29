@@ -13,9 +13,6 @@
   var galleryFields = document.getElementById("galleryFields");
   var statusBox = document.getElementById("statusBox");
   var publishBtn = document.getElementById("publishBtn");
-  var gbTokenForm = document.getElementById("gbTokenForm");
-  var gbTokenInput = document.getElementById("gbTokenInput");
-  var gbTokenStatus = document.getElementById("gbTokenStatus");
   var gbList = document.getElementById("gbList");
   var gbListStatus = document.getElementById("gbListStatus");
 
@@ -338,67 +335,6 @@
   }
 
   document.getElementById("gbRefreshBtn").addEventListener("click", loadGuestbook);
-
-  gbTokenForm.addEventListener("submit", function (e) {
-    e.preventDefault();
-    var adminToken = CMS.getToken();
-    var gbToken = gbTokenInput.value.trim();
-    if (!adminToken) {
-      gbTokenStatus.textContent = "Save your GitHub token in step 1 first.";
-      gbTokenStatus.className = "hint bad";
-      return;
-    }
-    if (!gbToken) {
-      gbTokenStatus.textContent = "Paste the guestbook token first.";
-      gbTokenStatus.className = "hint bad";
-      return;
-    }
-    gbTokenStatus.textContent = "Checking that this token cannot change website files…";
-    gbTokenStatus.className = "hint";
-    CMS.tokenCanWriteFiles(gbToken)
-      .then(function (canEdit) {
-        if (canEdit) {
-          throw new Error(
-            "That token can change website files. For Contents, choose Read-only, not Read and write, then try again."
-          );
-        }
-        gbTokenStatus.textContent = "Saving the guestbook key to the website…";
-        return CMS.saveGuestbookAuth(adminToken, gbToken);
-      })
-      .then(function () {
-        gbTokenInput.value = "";
-        gbTokenStatus.textContent =
-          "Guestbook is on. Signatures should work after the site updates (about a minute).";
-        gbTokenStatus.className = "hint ok";
-      })
-      .catch(function (err) {
-        gbTokenStatus.textContent =
-          (err && err.message) || "Could not turn on the guestbook.";
-        gbTokenStatus.className = "hint bad";
-      });
-  });
-
-  document.getElementById("gbTokenOffBtn").addEventListener("click", function () {
-    var adminToken = CMS.getToken();
-    if (!adminToken) {
-      gbTokenStatus.textContent = "Save your GitHub token in step 1 first.";
-      gbTokenStatus.className = "hint bad";
-      return;
-    }
-    gbTokenStatus.textContent = "Turning the guestbook off…";
-    gbTokenStatus.className = "hint";
-    CMS.saveGuestbookAuth(adminToken, "")
-      .then(function () {
-        gbTokenInput.value = "";
-        gbTokenStatus.textContent = "Guestbook is off. People cannot sign until you turn it on again.";
-        gbTokenStatus.className = "hint ok";
-      })
-      .catch(function (err) {
-        gbTokenStatus.textContent =
-          (err && err.message) || "Could not turn off the guestbook.";
-        gbTokenStatus.className = "hint bad";
-      });
-  });
 
   if (isUnlocked()) showApp();
   else showLock();
