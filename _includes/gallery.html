@@ -1,0 +1,26 @@
+{% assign thumbs_path = '/img/' | append: include.gallery_dir | append: '/thumbs/' %}
+{% assign full_path = '/img/' | append: include.gallery_dir | append: '/full/' %}
+{% assign gallery_src = full_path %}
+{% for file in site.static_files %}
+  {% assign ext = file.extname | downcase %}
+  {% if file.path contains thumbs_path %}
+    {% if ext == '.jpg' or ext == '.jpeg' or ext == '.png' %}
+      {% assign gallery_src = thumbs_path %}
+    {% endif %}
+  {% endif %}
+{% endfor %}
+
+<div class="thumbgrid">
+  {% for file in site.static_files %}
+    {% assign ext = file.extname | downcase %}
+    {% if file.path contains gallery_src %}
+      {% if ext == '.jpg' or ext == '.jpeg' or ext == '.png' %}
+        <a class="lb"
+           href="{{ '/img/' | append: include.gallery_dir | append: '/full/' | append: file.name | relative_url }}"
+           data-group="{{ include.gallery_dir }}">
+          <img src="{{ file.path | relative_url }}" alt="">
+        </a>
+      {% endif %}
+    {% endif %}
+  {% endfor %}
+</div>
