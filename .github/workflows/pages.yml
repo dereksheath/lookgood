@@ -21,6 +21,15 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Install ImageMagick
+        run: sudo apt-get update && sudo apt-get install -y imagemagick
+
+      # Thumbs committed by the other workflow do not retrigger this one
+      # (GitHub blocks GITHUB_TOKEN from starting new workflows). Build
+      # missing thumbs here so a new gallery is visible on the first deploy.
+      - name: Generate missing thumbnails
+        run: bash .github/scripts/generate_thumbs.sh
+
       - name: Add guestbook posting key for this build only
         env:
           GUESTBOOK_TOKEN: ${{ secrets.GUESTBOOK_TOKEN }}

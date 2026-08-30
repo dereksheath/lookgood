@@ -19,18 +19,7 @@ layout: default
   {% endif %}
 
   {% if page.gallery_dir %}
-    {% assign thumbs_path = '/img/' | append: page.gallery_dir | append: '/thumbs/' %}
-    <div class="thumbgrid">
-      {% for file in site.static_files %}
-        {% if file.path contains thumbs_path %}
-          <a class="lb"
-             href="{{ '/img/' | append: page.gallery_dir | append: '/full/' | append: file.name | relative_url }}"
-             data-group="{{ page.gallery_dir }}">
-            <img src="{{ file.path | relative_url }}" alt="">
-          </a>
-        {% endif %}
-      {% endfor %}
-    </div>
+    {% include gallery.html gallery_dir=page.gallery_dir %}
   {% endif %}
 
   <div class="postbody">
