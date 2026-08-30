@@ -21,6 +21,20 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      # GitHub's "Upload files" UI defaults to the repo root. Photos that
+      # land there get published at https://lookgood.party/051.jpg and can
+      # flood the Pages CDN with extra requests. They belong in
+      # img/<gallery>/full/ — drop them from this build only.
+      - name: Ignore photos accidentally uploaded to the repo root
+        run: |
+          shopt -s nullglob
+          extras=( *.jpg *.jpeg *.png *.gif *.JPG *.JPEG *.PNG *.GIF )
+          if ((${#extras[@]})); then
+            echo "Photos in the repository root are not published. Put them in img/<gallery>/full/ instead:"
+            printf '  %s\n' "${extras[@]}"
+            rm -f -- "${extras[@]}"
+          fi
+
       - name: Install ImageMagick
         run: sudo apt-get update && sudo apt-get install -y imagemagick
 
