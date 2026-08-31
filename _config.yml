@@ -1,14 +1,29 @@
 title: I Bet That You Look Good On The Dancefloor
 tagline: "2000s Parties at El Cid"
-description: "photo blog"
-url: "https://lookgood.party"          # leave blank for GitHub Pages project site; set later if you use a custom domain
-baseurl: ""      # if you publish at username.github.io, keep ""
+description: "Photo blog of 2000s dance parties at El Cid in Los Angeles. Flash photos, flyers, and galleries from Look Good Party."
+url: "https://lookgoodparty.com"
+baseurl: ""
+lang: en
+locale: en_US
 
 permalink: /:categories/:year/:month/:day/:title/
 markdown: kramdown
-
-# Optional: tweak these if you want
 timezone: America/Los_Angeles
+
+author:
+  name: Look Good Party
+  url: https://www.instagram.com/lookgood.party/
+
+logo: "/img/dancefloor header 4.jpg"
+
+social:
+  name: Look Good Party
+  links:
+    - https://www.instagram.com/lookgood.party/
+
+plugins:
+  - jekyll-seo-tag
+  - jekyll-sitemap
 
 defaults:
   - scope:
@@ -20,4 +35,3 @@ defaults:
 collections:
   guestbook:
     output: false
-
