@@ -2,4 +2,4 @@ User-agent: *
 Allow: /
 Disallow: /admin/
 
-Sitemap: https://lookgood.party/sitemap.xml
+Sitemap: https://lookgoodparty.com/sitemap.xml

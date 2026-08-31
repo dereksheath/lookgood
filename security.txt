@@ -5,5 +5,5 @@ sitemap: false
 ---
 Contact: https://www.instagram.com/lookgood.party/
 Expires: 2027-08-31T00:00:00.000Z
-Canonical: https://lookgood.party/.well-known/security.txt
+Canonical: https://lookgoodparty.com/.well-known/security.txt
 Preferred-Languages: en
