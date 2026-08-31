@@ -1,0 +1,19 @@
+---
+layout: default
+title: Flyers
+permalink: /flyers/
+---
+
+{% assign shown = 0 %}
+{% for post in site.posts %}
+  {% unless post.gallery_dir %}
+    {% include feed-item.html %}
+    {% assign shown = shown | plus: 1 %}
+  {% endunless %}
+{% endfor %}
+{% if shown == 0 %}
+<div class="post">
+  <h2>Flyers</h2>
+  <div class="intro">No flyers yet.</div>
+</div>
+{% endif %}
