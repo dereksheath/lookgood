@@ -267,8 +267,15 @@ ul.list li{
   font-size:34px;
 }
 
-#lbCount{
+#lbDownload{
+  display:block;
   margin-top:8px;
+  font:11px/14px Verdana, Arial, sans-serif;
+  color:#bbb;
+}
+
+#lbCount{
+  margin-top:6px;
   font:11px/14px "Courier New", Courier, monospace;
   color:#aaa;
 }
