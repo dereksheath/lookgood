@@ -18,10 +18,12 @@
   overlay.innerHTML =
     '<div id="lbFrame">' +
       '<a href="#" id="lbClose">×</a>' +
-      '<a href="#" id="lbPrev">‹</a>' +
-      '<img id="lbImg" src="" alt="">' +
-      '<a href="#" id="lbNext">›</a>' +
-      '<a href="" id="lbDownload" download>Download</a>' +
+      '<div id="lbStage">' +
+        '<a href="#" id="lbPrev">‹</a>' +
+        '<img id="lbImg" src="" alt="">' +
+        '<a href="#" id="lbNext">›</a>' +
+      '</div>' +
+      '<a href="" id="lbDownload" download>Download this photo</a>' +
       '<div id="lbCount"></div>' +
     '</div>';
 

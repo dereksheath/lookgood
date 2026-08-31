@@ -239,9 +239,16 @@ ul.list li{
   text-align:center;
 }
 
-#lbImg{
+#lbStage{
+  position:relative;
+  display:inline-block;
   max-width:100%;
-  max-height:85vh;
+}
+
+#lbImg{
+  display:block;
+  max-width:100%;
+  max-height:75vh;
   border:1px solid #222;
 }
 
@@ -270,8 +277,13 @@ ul.list li{
 #lbDownload{
   display:block;
   margin-top:8px;
-  font:11px/14px Verdana, Arial, sans-serif;
-  color:#bbb;
+  font:12px/16px Verdana, Arial, sans-serif;
+  color:#ff4bb2;
+  text-decoration:underline;
+}
+
+#lbDownload:hover{
+  color:#fff;
 }
 
 #lbCount{
