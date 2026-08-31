@@ -105,6 +105,17 @@ a:hover{ color:#ff4bb2; }
   font-size:11px;
 }
 
+a.h{
+  display:block;
+  color:#fff;
+  text-decoration:none;
+}
+
+a.h:hover,
+a.h.is-active{
+  color:#ff4bb2;
+}
+
 .small{ color:#888; font-size:11px; }
 
 .searchbox{
