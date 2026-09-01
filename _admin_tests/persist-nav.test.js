@@ -67,6 +67,14 @@ tests.push(
   })
 );
 
+tests.push(
+  test("image and other asset links are left to the lightbox or browser", function () {
+    assert.strictEqual(nav.isAssetPath("/img/a.png"), true);
+    assert.strictEqual(nav.isInternalHref("/img/a.png", home), false);
+    assert.strictEqual(nav.isInternalHref("/img/full/12.jpg", galleries), false);
+  })
+);
+
 Promise.all(tests)
   .then(function () {
     console.log("all " + tests.length + " tests passed");

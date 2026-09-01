@@ -17,12 +17,17 @@
     return pathname === "/admin" || pathname.indexOf("/admin/") === 0;
   }
 
+  function isAssetPath(pathname) {
+    return /\.(png|jpe?g|gif|webp|svg|mp3|mp4|pdf|zip)$/i.test(pathname);
+  }
+
   function isInternalHref(href, loc) {
     if (isSpecialHref(href)) return false;
     var u = locFrom(href, loc.href);
     if (!u) return false;
     if (u.origin !== loc.origin) return false;
     if (isAdminPath(u.pathname)) return false;
+    if (isAssetPath(u.pathname)) return false;
     return true;
   }
 
@@ -36,6 +41,7 @@
     module.exports = {
       isSpecialHref: isSpecialHref,
       isAdminPath: isAdminPath,
+      isAssetPath: isAssetPath,
       isInternalHref: isInternalHref,
       isSamePageHref: isSamePageHref
     };
@@ -160,6 +166,7 @@
       })
       .catch(function (err) {
         if (err && err.name === "AbortError") return;
+        if (err && err.message === "not html") return;
         location.href = u.href;
       })
       .then(function () {
