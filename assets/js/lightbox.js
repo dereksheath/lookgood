@@ -48,9 +48,9 @@
       '<div id="lbStage">' +
         '<div id="lbViewport">' +
           '<div id="lbTrack">' +
-            '<img class="lbSlide" id="lbSlidePrev" alt="">' +
-            '<img class="lbSlide" id="lbSlideCur" alt="">' +
-            '<img class="lbSlide" id="lbSlideNext" alt="">' +
+            '<img class="lbSlide" id="lbSlidePrev" alt="" draggable="false">' +
+            '<img class="lbSlide" id="lbSlideCur" alt="" draggable="false">' +
+            '<img class="lbSlide" id="lbSlideNext" alt="" draggable="false">' +
           "</div>" +
         "</div>" +
         '<a href="#" id="lbPrev">‹</a>' +
@@ -351,6 +351,9 @@
   slides.forEach(function (img) {
     img.addEventListener("dragstart", function (e) {
       e.preventDefault();
+    });
+    img.addEventListener("contextmenu", function (e) {
+      e.stopPropagation();
     });
   });
 
