@@ -44,7 +44,7 @@
   overlay.id = "lbOverlay";
   overlay.innerHTML =
     '<div id="lbFrame">' +
-      '<a href="#" id="lbClose">×</a>' +
+      '<a href="#" id="lbClose" title="Close" aria-label="Close">×</a>' +
       '<div id="lbStage">' +
         '<div id="lbViewport">' +
           '<div id="lbTrack">' +
