@@ -1,0 +1,19 @@
+---
+layout: default
+title: Galleries
+permalink: /galleries/
+---
+
+{% assign shown = 0 %}
+{% for post in site.posts %}
+  {% if post.gallery_dir %}
+    {% include feed-item.html %}
+    {% assign shown = shown | plus: 1 %}
+  {% endif %}
+{% endfor %}
+{% if shown == 0 %}
+<div class="post">
+  <h2>Galleries</h2>
+  <div class="intro">No galleries yet.</div>
+</div>
+{% endif %}

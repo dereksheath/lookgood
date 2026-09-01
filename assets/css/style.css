@@ -105,6 +105,17 @@ a:hover{ color:#ff4bb2; }
   font-size:11px;
 }
 
+a.h{
+  display:block;
+  color:#fff;
+  text-decoration:none;
+}
+
+a.h:hover,
+a.h.is-active{
+  color:#ff4bb2;
+}
+
 .small{ color:#888; font-size:11px; }
 
 .searchbox{
@@ -243,9 +254,17 @@ ul.list li{
   touch-action:none;
 }
 
-#lbImg{
+#lbStage{
+  position:relative;
+  display:inline-block;
   max-width:100%;
-  max-height:85vh;
+  touch-action:none;
+}
+
+#lbImg{
+  display:block;
+  max-width:100%;
+  max-height:75vh;
   border:1px solid #222;
   touch-action:none;
   -webkit-user-drag:none;
@@ -274,8 +293,20 @@ ul.list li{
   font-size:34px;
 }
 
-#lbCount{
+#lbDownload{
+  display:block;
   margin-top:8px;
+  font:12px/16px Verdana, Arial, sans-serif;
+  color:#ff4bb2;
+  text-decoration:underline;
+}
+
+#lbDownload:hover{
+  color:#fff;
+}
+
+#lbCount{
+  margin-top:6px;
   font:11px/14px "Courier New", Courier, monospace;
   color:#aaa;
 }

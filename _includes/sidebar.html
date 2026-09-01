@@ -1,6 +1,6 @@
 
 <div class="box">
-  <div class="h">Galleries</div>
+  <a class="h{% if page.url == '/galleries/' %} is-active{% endif %}" href="{{ '/galleries/' | relative_url }}">Galleries</a>
 
   <ul class="list">
     {% for post in site.posts %}
@@ -14,7 +14,7 @@
 </div>
 
 <div class="box">
-  <div class="h">Flyers</div>
+  <a class="h{% if page.url == '/flyers/' %} is-active{% endif %}" href="{{ '/flyers/' | relative_url }}">Flyers</a>
 
   <ul class="list">
     {% for post in site.posts %}
