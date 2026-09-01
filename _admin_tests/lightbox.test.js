@@ -46,6 +46,16 @@ tests.push(
 );
 
 tests.push(
+  test("wrapIndex loops around the gallery", function () {
+    assert.strictEqual(lb.wrapIndex(0, 3), 0);
+    assert.strictEqual(lb.wrapIndex(2, 3), 2);
+    assert.strictEqual(lb.wrapIndex(3, 3), 0);
+    assert.strictEqual(lb.wrapIndex(-1, 3), 2);
+    assert.strictEqual(lb.wrapIndex(5, 3), 2);
+  })
+);
+
+tests.push(
   test("invalid numbers are ignored", function () {
     assert.strictEqual(lb.swipeDir(NaN, 0), 0);
     assert.strictEqual(lb.swipeDir(-80, Infinity), 0);
