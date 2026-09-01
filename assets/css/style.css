@@ -238,6 +238,9 @@ ul.list li{
   background:#000;
   background:rgba(0,0,0,0.92);
   z-index:9999;
+  touch-action:none;
+  -webkit-user-select:none;
+  user-select:none;
 }
 
 #lbFrame{
@@ -248,12 +251,14 @@ ul.list li{
   width:92%;
   max-width:980px;
   text-align:center;
+  touch-action:none;
 }
 
 #lbStage{
   position:relative;
   display:inline-block;
   max-width:100%;
+  touch-action:none;
 }
 
 #lbImg{
@@ -261,6 +266,9 @@ ul.list li{
   max-width:100%;
   max-height:75vh;
   border:1px solid #222;
+  touch-action:none;
+  -webkit-user-drag:none;
+  -webkit-touch-callout:none;
 }
 
 #lbPrev, #lbNext, #lbClose{
