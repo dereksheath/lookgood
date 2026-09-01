@@ -1,4 +1,4 @@
-name: Save guestbook signatures
+name: Save public board notes
 
 on:
   issues:
@@ -14,22 +14,27 @@ concurrency:
 
 jobs:
   save:
-    if: startsWith(github.event.issue.title, '[guestbook]')
+    if: >
+      startsWith(github.event.issue.title, '[guestbook]') ||
+      startsWith(github.event.issue.title, '[missed]')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Write guestbook file
+      - name: Write board files
         env:
           ISSUE_TITLE: ${{ github.event.issue.title }}
           ISSUE_BODY: ${{ github.event.issue.body }}
           ISSUE_TIME: ${{ github.event.issue.created_at }}
           ISSUE_NUMBER: ${{ github.event.issue.number }}
-        run: python3 .github/scripts/ingest_guestbook.py
+        run: |
+          python3 .github/scripts/ingest_guestbook.py
+          python3 .github/scripts/ingest_missed.py
 
       - name: Commit and close
         env:
+          ISSUE_TITLE: ${{ github.event.issue.title }}
           ISSUE_NUMBER: ${{ github.event.issue.number }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -37,9 +42,18 @@ jobs:
           git config user.name "lookgood-bot"
           git config user.email "actions@users.noreply.github.com"
 
+          changed=""
           if git status --porcelain | grep -q "_guestbook/"; then
             git add _guestbook
-            git commit -m "Guestbook: add comment"
+            changed="${changed} guestbook"
+          fi
+          if git status --porcelain | grep -q "_missed/"; then
+            git add _missed
+            changed="${changed} missed"
+          fi
+
+          if [ -n "$changed" ]; then
+            git commit -m "Board: add note"
             i=0
             while [ "$i" -lt 3 ]; do
               git pull --rebase origin main && git push origin HEAD:main && break
@@ -47,7 +61,14 @@ jobs:
               sleep 2
             done
           else
-            echo "No guestbook file to commit."
+            echo "No public board file to commit."
           fi
 
-          gh issue close "$ISSUE_NUMBER" --repo "$GITHUB_REPOSITORY" >/dev/null
+          case "$ISSUE_TITLE" in
+            '[missed] reply'*)
+              echo "Leaving private missed-connection reply open for the inbox."
+              ;;
+            *)
+              gh issue close "$ISSUE_NUMBER" --repo "$GITHUB_REPOSITORY" >/dev/null
+              ;;
+          esac

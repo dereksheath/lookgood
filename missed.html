@@ -1,0 +1,117 @@
+---
+layout: default
+title: Missed Connections
+permalink: /missed-connections/
+---
+
+<div class="post">
+  <h2>Missed Connections</h2>
+  <div class="meta">You saw them. You didn’t talk. Write it here.</div>
+
+  <div class="intro">
+    This is a board, not a phone book. Notes are public. How to find you is not.
+    If someone thinks a note is about them, they can send a private reply. That
+    stays off this page too. We pass it along.
+  </div>
+
+  <div class="mc-rules">
+    <div class="h">House rules</div>
+    <div class="intro">
+      1. No phone numbers, emails, last names, or @handles on the board.<br>
+      2. Instagram is the best private contact. Skip your number.<br>
+      3. Be decent. Creepy gets deleted.
+    </div>
+  </div>
+
+  <form id="mcForm" class="gbform">
+    <label for="mcName">Your name or nickname</label>
+    <input id="mcName" name="name" type="text" maxlength="40" autocomplete="nickname">
+
+    <label for="mcNight">Which night</label>
+    <select id="mcNight" name="night">
+      <option value="">Choose a night</option>
+      {% for post in site.posts %}
+      <option value="{{ post.title | escape }}">{{ post.title | escape }}</option>
+      {% endfor %}
+      <option value="Another night / not sure">Another night / not sure</option>
+    </select>
+
+    <label for="mcYou">You</label>
+    <input id="mcYou" name="you" type="text" maxlength="200" placeholder="What they were wearing, where they were">
+
+    <label for="mcMe">Me</label>
+    <input id="mcMe" name="me" type="text" maxlength="200" placeholder="What you were wearing">
+
+    <label for="mcNote">The moment</label>
+    <textarea id="mcNote" name="note" maxlength="400" placeholder="What happened, or what you wanted to say"></textarea>
+
+    <label for="mcContact">How to find you if they reply</label>
+    <input id="mcContact" name="contact" type="text" maxlength="80" placeholder="Instagram is best">
+    <div class="mc-private">Not shown on this page. If someone replies, we use this to pass it along.</div>
+
+    <label for="mcCaptcha">Type the word DANCEFLOOR</label>
+    <input id="mcCaptcha" name="captcha" type="text" maxlength="20" autocomplete="off">
+
+    <label class="gb-hp" for="mcHome">Homepage</label>
+    <input id="mcHome" class="gb-hp" name="homepage" type="text" tabindex="-1" autocomplete="off">
+
+    <div class="row">
+      <input class="searchbtn" type="submit" value="Put it on the board">
+    </div>
+  </form>
+  <div id="mcStatus" class="gb-status" hidden></div>
+</div>
+
+{% assign entries = site.missed | sort: "date" | reverse %}
+{% if entries.size == 0 %}
+  <div class="post">
+    <div class="intro">Nobody has written one yet. You can be first.</div>
+  </div>
+{% endif %}
+
+{% for e in entries %}
+  <div class="post gb-entry mc-entry" id="mc-{{ e.number }}">
+    <div class="mc-num">#{{ e.number }}</div>
+    <div class="gb-name">{{ e.name | escape }}</div>
+    <div class="meta">{{ e.date | date: "%b %e, %Y" }}{% if e.night %} · {{ e.night | escape }}{% endif %}</div>
+    {% if e.you %}
+    <div class="mc-line"><span class="mc-k">You:</span> {{ e.you | escape }}</div>
+    {% endif %}
+    {% if e.me %}
+    <div class="mc-line"><span class="mc-k">Me:</span> {{ e.me | escape }}</div>
+    {% endif %}
+    {% if e.note %}
+    <div class="intro">{{ e.note | escape }}</div>
+    {% endif %}
+    {% if e.has_contact %}
+    <div class="mc-private">They left a private way to get in touch.</div>
+    {% endif %}
+
+    <a class="mc-reply-toggle" href="#mc-reply-{{ e.number }}">I think this is me</a>
+    <form id="mc-reply-{{ e.number }}" class="gbform mc-reply-form" data-post="{{ e.number }}" hidden>
+      <label>Your name or nickname
+        <input name="name" type="text" maxlength="40" autocomplete="nickname">
+      </label>
+      <label>Why it’s you
+        <textarea name="note" maxlength="400" placeholder="A detail only you would know"></textarea>
+      </label>
+      <label>How they can find you
+        <input name="contact" type="text" maxlength="80" placeholder="Instagram is best">
+      </label>
+      <div class="mc-private">This reply does not show on the board.</div>
+      <label>Type the word DANCEFLOOR
+        <input name="captcha" type="text" maxlength="20" autocomplete="off">
+      </label>
+      <label class="gb-hp">Homepage
+        <input class="gb-hp" name="homepage" type="text" tabindex="-1" autocomplete="off">
+      </label>
+      <div class="row">
+        <input class="searchbtn" type="submit" value="Send a private reply">
+      </div>
+      <div class="gb-status mc-reply-status" hidden></div>
+    </form>
+  </div>
+{% endfor %}
+
+<script src="{{ '/assets/js/guestbook-auth.js' | relative_url }}"></script>
+<script src="{{ '/assets/js/missed.js' | relative_url }}"></script>

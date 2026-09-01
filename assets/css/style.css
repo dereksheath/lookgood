@@ -842,6 +842,7 @@ ul.list li{
 }
 
 .gbform input[type="text"],
+.gbform select,
 .gbform textarea{
   width:100%;
   box-sizing:border-box;
@@ -884,6 +885,61 @@ ul.list li{
 
 .gb-entry{
   margin-bottom:14px;
+}
+
+.mc-rules{
+  border:1px dotted #333;
+  padding:8px 10px;
+  margin:10px 0 14px;
+}
+
+.mc-rules .h{
+  margin-bottom:4px;
+}
+
+.mc-rules .intro{
+  margin:0;
+}
+
+.mc-num{
+  float:right;
+  color:#777;
+  font-family:"Courier New", Courier, monospace;
+  font-size:11px;
+}
+
+.mc-line{
+  color:#ccc;
+  margin:4px 0;
+}
+
+.mc-k{
+  color:#888;
+}
+
+.mc-private{
+  color:#777;
+  font-size:11px;
+  margin:6px 0 10px;
+}
+
+.mc-reply-toggle{
+  display:inline-block;
+  margin-top:4px;
+}
+
+.mc-reply-form{
+  margin-top:10px;
+  padding-top:8px;
+  border-top:1px dotted #333;
+}
+
+.mc-entry{
+  overflow:hidden;
+}
+
+.mc-entry .intro{
+  margin-bottom:8px;
 }
 
 

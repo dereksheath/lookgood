@@ -22,6 +22,10 @@
   var publishBtn = document.getElementById("publishBtn");
   var gbList = document.getElementById("gbList");
   var gbListStatus = document.getElementById("gbListStatus");
+  var mcList = document.getElementById("mcList");
+  var mcListStatus = document.getElementById("mcListStatus");
+  var mcReplyList = document.getElementById("mcReplyList");
+  var mcReplyStatus = document.getElementById("mcReplyStatus");
   var galleriesCache = [];
   var selectedNextIndex = 1;
 
@@ -79,6 +83,8 @@
     renderTokenStatus();
     updateType();
     loadGuestbook();
+    loadMissed();
+    loadMissedReplies();
   }
 
   function showLock() {
@@ -556,6 +562,171 @@
 
   document.getElementById("gbRefreshBtn").addEventListener("click", loadGuestbook);
 
+  function loadMissed() {
+    mcList.innerHTML = "";
+    var token = CMS.getToken();
+    if (!token) {
+      mcListStatus.textContent = "Save your GitHub token in step 1 to see the board.";
+      mcListStatus.className = "hint";
+      return;
+    }
+    mcListStatus.textContent = "Loading notes…";
+    mcListStatus.className = "hint";
+    CMS.listMissedEntries(token)
+      .then(function (entries) {
+        mcList.innerHTML = "";
+        if (!entries.length) {
+          mcListStatus.textContent = "No missed connections on the board right now.";
+          mcListStatus.className = "hint";
+          return;
+        }
+        mcListStatus.textContent =
+          entries.length + " note" + (entries.length === 1 ? "" : "s") + " on the board.";
+        mcListStatus.className = "hint";
+        entries.sort(function (a, b) {
+          return String(b.date).localeCompare(String(a.date));
+        });
+        entries.forEach(function (entry) {
+          var item = document.createElement("div");
+          item.className = "gbitem";
+
+          var who = document.createElement("div");
+          who.className = "who";
+          who.textContent =
+            "#" + (entry.number || "?") + " " + (entry.name || "(no name)");
+
+          var when = document.createElement("div");
+          when.className = "when";
+          when.textContent = (entry.date || "") + (entry.night ? " · " + entry.night : "");
+
+          var msg = document.createElement("div");
+          msg.className = "msg";
+          var lines = [];
+          if (entry.you) lines.push("You: " + entry.you);
+          if (entry.me) lines.push("Me: " + entry.me);
+          if (entry.note) lines.push(entry.note);
+          msg.textContent = lines.join("\n");
+
+          var del = document.createElement("button");
+          del.type = "button";
+          del.textContent = "Remove from board";
+          del.addEventListener("click", function () {
+            if (!window.confirm("Remove this note from the website?")) return;
+            del.disabled = true;
+            CMS.deleteMissedEntry(CMS.getToken(), entry.path, entry.sha)
+              .then(function () {
+                loadMissed();
+              })
+              .catch(function (err) {
+                del.disabled = false;
+                mcListStatus.textContent =
+                  (err && err.message) || "Could not remove that note.";
+                mcListStatus.className = "hint bad";
+              });
+          });
+
+          item.appendChild(who);
+          item.appendChild(when);
+          item.appendChild(msg);
+          item.appendChild(del);
+          mcList.appendChild(item);
+        });
+      })
+      .catch(function (err) {
+        mcListStatus.textContent =
+          (err && err.message) || "Could not load missed connections.";
+        mcListStatus.className = "hint bad";
+      });
+  }
+
+  function loadMissedReplies() {
+    mcReplyList.innerHTML = "";
+    var token = CMS.getToken();
+    if (!token) {
+      mcReplyStatus.textContent = "Save your GitHub token in step 1 to see private replies.";
+      mcReplyStatus.className = "hint";
+      return;
+    }
+    mcReplyStatus.textContent = "Loading private replies…";
+    mcReplyStatus.className = "hint";
+    CMS.listMissedReplies(token)
+      .then(function (entries) {
+        mcReplyList.innerHTML = "";
+        if (!entries.length) {
+          mcReplyStatus.textContent = "No private replies waiting.";
+          mcReplyStatus.className = "hint";
+          return;
+        }
+        mcReplyStatus.textContent =
+          entries.length +
+          " private " +
+          (entries.length === 1 ? "reply" : "replies") +
+          " waiting.";
+        mcReplyStatus.className = "hint";
+        entries.forEach(function (entry) {
+          var item = document.createElement("div");
+          item.className = "gbitem";
+
+          var who = document.createElement("div");
+          who.className = "who";
+          who.textContent =
+            (entry.from || "(no name)") +
+            " → note #" +
+            (entry.post || "?") +
+            (entry.posterName ? " (" + entry.posterName + ")" : "");
+
+          var when = document.createElement("div");
+          when.className = "when";
+          when.textContent = entry.posterNight || "";
+
+          var msg = document.createElement("div");
+          msg.className = "msg";
+          msg.textContent =
+            (entry.note ? entry.note + "\n\n" : "") +
+            "Reply contact: " +
+            (entry.contact || "(none)") +
+            "\nOriginal contact: " +
+            (entry.posterContact || "(none)");
+
+          var done = document.createElement("button");
+          done.type = "button";
+          done.textContent = "Mark as passed along";
+          done.addEventListener("click", function () {
+            if (!window.confirm("Close this private reply?")) return;
+            done.disabled = true;
+            CMS.closeIssue(CMS.getToken(), entry.number)
+              .then(function () {
+                loadMissedReplies();
+              })
+              .catch(function (err) {
+                done.disabled = false;
+                mcReplyStatus.textContent =
+                  (err && err.message) || "Could not close that reply.";
+                mcReplyStatus.className = "hint bad";
+              });
+          });
+
+          item.appendChild(who);
+          item.appendChild(when);
+          item.appendChild(msg);
+          item.appendChild(done);
+          mcReplyList.appendChild(item);
+        });
+      })
+      .catch(function (err) {
+        mcReplyStatus.textContent =
+          (err && err.message) ||
+          "Could not load private replies. The token in step 1 needs permission to read GitHub Issues.";
+        mcReplyStatus.className = "hint bad";
+      });
+  }
+
+  document.getElementById("mcRefreshBtn").addEventListener("click", function () {
+    loadMissed();
+    loadMissedReplies();
+  });
+
   if (isUnlocked()) showApp();
   else showLock();
 })();
+
