@@ -48,9 +48,9 @@
       '<div id="lbStage">' +
         '<div id="lbViewport">' +
           '<div id="lbTrack">' +
-            '<img class="lbSlide" id="lbSlidePrev" alt="" draggable="false">' +
-            '<img class="lbSlide" id="lbSlideCur" alt="" draggable="false">' +
-            '<img class="lbSlide" id="lbSlideNext" alt="" draggable="false">' +
+            '<div class="lbPane"><img class="lbSlide" id="lbSlidePrev" alt="" draggable="false"></div>' +
+            '<div class="lbPane"><img class="lbSlide" id="lbSlideCur" alt="" draggable="false"></div>' +
+            '<div class="lbPane"><img class="lbSlide" id="lbSlideNext" alt="" draggable="false"></div>' +
           "</div>" +
         "</div>" +
         '<a href="#" id="lbPrev">‹</a>' +
@@ -73,6 +73,7 @@
   var lbDownload = q("#lbDownload", overlay);
   var lbCount = q("#lbCount", overlay);
   var slides = [slidePrev, slideCur, slideNext];
+  var panes = qa(".lbPane", overlay);
 
   function fileNameFromHref(href) {
     var name = String(href || "").split("?")[0].split("#")[0].split("/").pop();
@@ -123,9 +124,9 @@
   function layoutSlides() {
     var w = vpWidth();
     var i;
-    for (i = 0; i < slides.length; i++) {
-      slides[i].style.flex = "0 0 " + w + "px";
-      slides[i].style.width = w + "px";
+    for (i = 0; i < panes.length; i++) {
+      panes[i].style.flex = "0 0 " + w + "px";
+      panes[i].style.width = w + "px";
     }
   }
 
