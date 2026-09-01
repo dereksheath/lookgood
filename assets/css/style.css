@@ -22,6 +22,105 @@ a:hover{ color:#ff4bb2; }
   margin-bottom:14px;
 }
 
+.radio-bar{
+  width:100%;
+  box-sizing:border-box;
+  display:flex;
+  align-items:stretch;
+  background:#111;
+  border:1px solid #333;
+  margin-bottom:14px;
+  font-family:Arial, Helvetica, sans-serif;
+  color:#aaa;
+  overflow:hidden;
+}
+
+.radio-label{
+  width:150px;
+  flex-shrink:0;
+  display:flex;
+  align-items:center;
+  gap:7px;
+  box-sizing:border-box;
+  padding:0 12px;
+  background:linear-gradient(to bottom, #242424 0%, #171717 50%, #101010 100%);
+  border-right:1px solid #343434;
+  font-size:10px;
+  font-weight:bold;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  white-space:nowrap;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.07);
+}
+
+.radio-led{
+  width:6px;
+  height:6px;
+  flex-shrink:0;
+  background:#91c94a;
+  box-shadow:0 0 3px rgba(145,201,74,.6);
+}
+
+.radio-embed{
+  flex:1;
+  min-width:0;
+  background:#111;
+}
+
+.radio-embed iframe{
+  display:block;
+  width:100%;
+  height:60px;
+  border:0;
+}
+
+.radio-meta{
+  width:58px;
+  flex-shrink:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  box-sizing:border-box;
+  background:linear-gradient(to bottom, #1d1d1d, #101010);
+  border-left:1px solid #333;
+  color:#666;
+  font-family:"Courier New", Courier, monospace;
+  font-size:8px;
+  line-height:1.2;
+  text-align:center;
+  text-transform:uppercase;
+}
+
+@media (max-width: 650px){
+  .radio-label{
+    width:110px;
+    padding:0 8px;
+    font-size:9px;
+  }
+
+  .radio-meta{
+    display:none;
+  }
+}
+
+@media (max-width: 430px){
+  .radio-bar{
+    display:block;
+  }
+
+  .radio-label{
+    width:100%;
+    height:30px;
+    border-right:0;
+    border-bottom:1px solid #333;
+    padding:0 9px;
+  }
+
+  .radio-embed iframe{
+    height:60px;
+  }
+}
+
 .headerimg{
   display:block;
   width:100%;
@@ -93,21 +192,12 @@ a:hover{ color:#ff4bb2; }
   width:255px;
 }
 
-.mixcloud-widget{
-  padding:0;
-  overflow:hidden;
-  line-height:0;
-}
-
-.mixcloud-widget iframe{
-  display:block;
-  width:100%;
-  height:60px;
-  border:0;
-}
-
 #content{
   flex:1;
+}
+
+#content.is-loading{
+  opacity:0.55;
 }
 
 .box{

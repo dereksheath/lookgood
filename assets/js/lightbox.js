@@ -27,18 +27,20 @@
   }
 
   if (typeof document === "undefined") return;
+  if (document.getElementById("lbOverlay")) return;
 
   function q(sel, root) { return (root || document).querySelector(sel); }
   function qa(sel, root) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
 
-  var links = qa("a.lb");
-  if (!links.length) return;
-
   var groups = {};
-  links.forEach(function (a) {
-    var g = a.getAttribute("data-group") || "default";
-    (groups[g] = groups[g] || []).push(a);
-  });
+
+  function refreshGroups() {
+    groups = {};
+    qa("a.lb").forEach(function (a) {
+      var g = a.getAttribute("data-group") || "default";
+      (groups[g] = groups[g] || []).push(a);
+    });
+  }
 
   var overlay = document.createElement("div");
   overlay.id = "lbOverlay";
@@ -308,13 +310,28 @@
     return el === lbClose || el === lbPrev || el === lbNext || el === lbDownload;
   }
 
-  Object.keys(groups).forEach(function (g) {
-    groups[g].forEach(function (a, idx) {
-      a.addEventListener("click", function (e) {
-        e.preventDefault();
-        openAt(g, idx);
-      });
-    });
+  document.addEventListener("click", function (e) {
+    var t = e.target;
+    var a = null;
+    while (t && t.nodeType === 1) {
+      if (t.tagName === "A" && /(^|\s)lb(\s|$)/.test(t.className || "")) {
+        a = t;
+        break;
+      }
+      t = t.parentElement;
+    }
+    if (!a) return;
+    e.preventDefault();
+    refreshGroups();
+    var g = a.getAttribute("data-group") || "default";
+    var arr = groups[g] || [];
+    var idx = arr.indexOf(a);
+    if (idx < 0) return;
+    openAt(g, idx);
+  });
+
+  document.addEventListener("lookgood:navigate", function () {
+    if (isOpen()) close();
   });
 
   lbPrev.addEventListener("click", function (e) {
