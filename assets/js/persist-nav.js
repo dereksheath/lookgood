@@ -1,5 +1,5 @@
 (function () {
-  // Keep the Mixcloud iframe mounted: internal links swap #content only.
+  // Keep the Mixcloud radio bar mounted: internal links swap #content only.
   function locFrom(href, baseHref) {
     try {
       return new URL(href, baseHref);
