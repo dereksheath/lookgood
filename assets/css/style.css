@@ -43,7 +43,12 @@ a:hover{ color:#ff4bb2; }
 }
 
 .thumbgrid a{
-  display:block !important;
+  display:flex !important;
+  flex-direction:column !important;
+  justify-content:center !important;
+  align-items:center !important;
+  height:100%;
+  box-sizing:border-box;
   margin:0 !important;         /* kill old inline spacing */
   border:1px solid #222 !important;
 }
@@ -52,6 +57,8 @@ a:hover{ color:#ff4bb2; }
   display:block !important;
   width:100% !important;
   height:auto !important;
+  margin-top:auto !important;
+  margin-bottom:auto !important;
 }
 
 /* FORCE 3-wide on phones */
@@ -166,7 +173,12 @@ a.h.is-active{
 }
 
 .thumbgrid a{
-  display:block;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  height:100%;
+  box-sizing:border-box;
   border:1px solid #222;
 }
 
