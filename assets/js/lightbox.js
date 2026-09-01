@@ -355,16 +355,18 @@
   });
 
   overlay.addEventListener("touchstart", function (e) {
-    if (!isOpen() || e.touches.length !== 1 || settling) return;
-    if (isControl(e.target)) return;
+    if (!isOpen() || e.touches.length !== 1) return;
 
-    trackingTouch = true;
-    dragging = false;
     if (suppressTimer) {
       clearTimeout(suppressTimer);
       suppressTimer = null;
     }
     suppressClick = false;
+
+    if (settling || isControl(e.target)) return;
+
+    trackingTouch = true;
+    dragging = false;
     touchStartX = e.touches[0].clientX;
     touchStartY = e.touches[0].clientY;
     layoutSlides();
