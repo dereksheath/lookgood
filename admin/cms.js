@@ -733,6 +733,255 @@
     );
   };
 
+  CMS.MISSED_DIR = "_missed";
+  CMS.MISSED_POST_MARKER = "LOOKGOOD_MISSED_V1";
+  CMS.MISSED_REPLY_MARKER = "LOOKGOOD_MISSED_REPLY_V1";
+
+  CMS.isMissedFilePath = function (path) {
+    return /^_missed\/[A-Za-z0-9._-]+\.md$/.test(String(path || ""));
+  };
+
+  CMS.looksLikePublicContact = function (text) {
+    var s = String(text || "");
+    if (/[\w.+-]+@[\w-]+\.[\w.-]+/.test(s)) return true;
+    if (/https?:\/\//i.test(s)) return true;
+    if (/(^|[\s])@[A-Za-z0-9._]{2,}/.test(s)) return true;
+    if (/(?:\+?1[\s.\-]*)?(?:\(?\d{3}\)?[\s.\-]*)\d{3}[\s.\-]*\d{4}/.test(s)) return true;
+    return false;
+  };
+
+  CMS.parseMarkedJsonBody = function (text, marker) {
+    var raw = String(text || "").replace(/\r\n/g, "\n").trim();
+    if (raw.indexOf(marker) !== 0) return null;
+    var rest = raw.slice(marker.length).trim();
+    try {
+      var data = JSON.parse(rest);
+      return data && typeof data === "object" ? data : null;
+    } catch (e) {
+      return null;
+    }
+  };
+
+  CMS.parseMissedMarkdown = function (text) {
+    var raw = String(text || "").replace(/\r\n/g, "\n");
+    var m = raw.match(/^---\n([\s\S]*?)\n---/);
+    if (!m) return null;
+    function field(key) {
+      var quoted = m[1].match(new RegExp("^" + key + ':\\s*"([\\s\\S]*?)"\\s*$', "m"));
+      if (quoted) return quoted[1].replace(/\\"/g, '"').replace(/\\\\/g, "\\");
+      var plain = m[1].match(new RegExp("^" + key + ":\\s*(.*)$", "m"));
+      return plain ? plain[1].trim() : "";
+    }
+    return {
+      name: field("name"),
+      night: field("night"),
+      you: field("you"),
+      me: field("me"),
+      note: field("note"),
+      number: field("number"),
+      hasContact: field("has_contact") === "true",
+      date: field("date")
+    };
+  };
+
+  CMS.buildMissedIssueBody = function (fields) {
+    var f = fields || {};
+    return (
+      CMS.MISSED_POST_MARKER +
+      "\n" +
+      JSON.stringify({
+        name: String(f.name || "").slice(0, 40),
+        night: String(f.night || "").slice(0, 80),
+        you: String(f.you || "").slice(0, 200),
+        me: String(f.me || "").slice(0, 200),
+        note: String(f.note || "").slice(0, 400),
+        contact: String(f.contact || "").slice(0, 80)
+      })
+    );
+  };
+
+  CMS.buildMissedReplyIssueBody = function (fields) {
+    var f = fields || {};
+    return (
+      CMS.MISSED_REPLY_MARKER +
+      "\n" +
+      JSON.stringify({
+        post: String(f.post || "").replace(/[^0-9]/g, ""),
+        name: String(f.name || "").slice(0, 40),
+        note: String(f.note || "").slice(0, 400),
+        contact: String(f.contact || "").slice(0, 80)
+      })
+    );
+  };
+
+  CMS.parseMissedPostIssue = function (body) {
+    var data = CMS.parseMarkedJsonBody(body, CMS.MISSED_POST_MARKER);
+    if (!data) return null;
+    return {
+      kind: "post",
+      name: String(data.name || ""),
+      night: String(data.night || ""),
+      you: String(data.you || ""),
+      me: String(data.me || ""),
+      note: String(data.note || ""),
+      contact: String(data.contact || "")
+    };
+  };
+
+  CMS.parseMissedReplyIssue = function (title, body) {
+    var data = CMS.parseMarkedJsonBody(body, CMS.MISSED_REPLY_MARKER);
+    if (!data) return null;
+    var post = String(data.post || "").replace(/[^0-9]/g, "");
+    if (!post) {
+      var fromTitle = String(title || "").match(/\[missed\]\s*reply\s+(\d+)/i);
+      post = fromTitle ? fromTitle[1] : "";
+    }
+    return {
+      kind: "reply",
+      post: post,
+      name: String(data.name || ""),
+      note: String(data.note || ""),
+      contact: String(data.contact || "")
+    };
+  };
+
+  CMS.isMissedReplyTitle = function (title) {
+    return /^\[missed\]\s*reply\b/i.test(String(title || ""));
+  };
+
+  CMS.listMissedEntries = function (token, fetchFn) {
+    var repo = "/repos/" + CMS.REPO_OWNER + "/" + CMS.REPO_NAME;
+    return CMS.githubRequest(
+      token,
+      "GET",
+      repo + "/contents/" + CMS.MISSED_DIR + "?ref=" + CMS.BRANCH,
+      null,
+      fetchFn
+    )
+      .then(function (items) {
+        var files = (items || []).filter(function (it) {
+          return it && it.type === "file" && CMS.isMissedFilePath(it.path);
+        });
+        return runPool(files, 4, function (it) {
+          return CMS.githubRequest(
+            token,
+            "GET",
+            repo + "/contents/" + it.path,
+            null,
+            fetchFn
+          ).then(function (file) {
+            var parsed = CMS.parseMissedMarkdown(
+              CMS.base64ToText(file.content || "")
+            ) || {};
+            return {
+              path: it.path,
+              sha: file.sha,
+              name: parsed.name || it.name,
+              night: parsed.night || "",
+              you: parsed.you || "",
+              me: parsed.me || "",
+              note: parsed.note || "",
+              number: parsed.number || "",
+              date: parsed.date || ""
+            };
+          });
+        });
+      })
+      .catch(function (err) {
+        if (err && err.status === 404) return [];
+        throw err;
+      });
+  };
+
+  CMS.deleteMissedEntry = function (token, path, sha, fetchFn) {
+    if (!CMS.isMissedFilePath(path)) {
+      return Promise.reject(new Error("That is not a missed connections file."));
+    }
+    return CMS.githubRequest(
+      token,
+      "DELETE",
+      "/repos/" + CMS.REPO_OWNER + "/" + CMS.REPO_NAME + "/contents/" + path,
+      {
+        message: "Missed connections: remove note",
+        sha: sha,
+        branch: CMS.BRANCH
+      },
+      fetchFn
+    );
+  };
+
+  CMS.listRepoIssues = function (token, state, fetchFn) {
+    return CMS.githubRequest(
+      token,
+      "GET",
+      "/repos/" +
+        CMS.REPO_OWNER +
+        "/" +
+        CMS.REPO_NAME +
+        "/issues?state=" +
+        encodeURIComponent(state || "open") +
+        "&per_page=100",
+      null,
+      fetchFn
+    ).then(function (items) {
+      return (items || []).filter(function (it) {
+        return it && !it.pull_request;
+      });
+    });
+  };
+
+  CMS.closeIssue = function (token, number, fetchFn) {
+    var n = String(number || "").replace(/[^0-9]/g, "");
+    if (!n) return Promise.reject(new Error("Missing issue number."));
+    return CMS.githubRequest(
+      token,
+      "PATCH",
+      "/repos/" + CMS.REPO_OWNER + "/" + CMS.REPO_NAME + "/issues/" + n,
+      { state: "closed" },
+      fetchFn
+    );
+  };
+
+  CMS.listMissedReplies = function (token, fetchFn) {
+    var repo = "/repos/" + CMS.REPO_OWNER + "/" + CMS.REPO_NAME;
+    return CMS.listRepoIssues(token, "open", fetchFn).then(function (items) {
+      var replies = (items || []).filter(function (it) {
+        return it && CMS.isMissedReplyTitle(it.title);
+      });
+      return runPool(replies, 4, function (issue) {
+        var parsed = CMS.parseMissedReplyIssue(issue.title, issue.body) || {};
+        var row = {
+          number: issue.number,
+          from: parsed.name || "",
+          note: parsed.note || "",
+          contact: parsed.contact || "",
+          post: parsed.post || "",
+          posterName: "",
+          posterContact: "",
+          posterNight: ""
+        };
+        if (!row.post) return row;
+        return CMS.githubRequest(
+          token,
+          "GET",
+          repo + "/issues/" + row.post,
+          null,
+          fetchFn
+        )
+          .then(function (orig) {
+            var poster = CMS.parseMissedPostIssue(orig && orig.body) || {};
+            row.posterName = poster.name || "";
+            row.posterContact = poster.contact || "";
+            row.posterNight = poster.night || "";
+            return row;
+          })
+          .catch(function () {
+            return row;
+          });
+      });
+    });
+  };
+
   if (typeof module !== "undefined" && module.exports) {
     module.exports = CMS;
   } else {

@@ -20,4 +20,6 @@ defaults:
 collections:
   guestbook:
     output: false
+  missed:
+    output: false
 

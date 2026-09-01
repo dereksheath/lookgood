@@ -535,6 +535,120 @@ tests.push(
   })
 );
 
+tests.push(
+  test("missed connections keep contact out of public markdown helpers", function () {
+    assert.strictEqual(CMS.isMissedFilePath("_missed/2026-08-29-120000-12.md"), true);
+    assert.strictEqual(CMS.isMissedFilePath("_posts/hack.md"), false);
+    assert.strictEqual(CMS.isMissedFilePath("_missed/../_posts/x.md"), false);
+    assert.strictEqual(CMS.looksLikePublicContact("email me at a@b.com"), true);
+    assert.strictEqual(CMS.looksLikePublicContact("ig @findme"), true);
+    assert.strictEqual(CMS.looksLikePublicContact("sequin top by the patio"), false);
+    const parsed = CMS.parseMissedMarkdown(
+      '---\nname: "Sam"\nnight: "2008 Night"\nyou: "sequin"\nme: "stripes"\nnote: "hi"\nnumber: 12\nhas_contact: true\ndate: "2026-08-29 12:00:00 -0700"\n---\n'
+    );
+    assert.strictEqual(parsed.name, "Sam");
+    assert.strictEqual(parsed.number, "12");
+    assert.strictEqual(parsed.hasContact, true);
+    const body = CMS.buildMissedIssueBody({
+      name: "Sam",
+      night: "2008 Night",
+      you: "sequin",
+      me: "stripes",
+      note: "hi",
+      contact: "@secret.person"
+    });
+    assert.ok(body.indexOf("LOOKGOOD_MISSED_V1") === 0);
+    assert.ok(body.indexOf("@secret.person") !== -1);
+    const publicMd = CMS.parseMissedMarkdown(
+      '---\nname: "Sam"\nnight: "2008 Night"\nyou: "sequin"\nme: "stripes"\nnote: "hi"\nnumber: 12\nhas_contact: true\ndate: "2026-08-29 12:00:00 -0700"\n---\n'
+    );
+    assert.ok(!Object.prototype.hasOwnProperty.call(publicMd, "contact"));
+    const replyBody = CMS.buildMissedReplyIssueBody({
+      post: "12",
+      name: "Alex",
+      note: "sequin top",
+      contact: "@alex"
+    });
+    assert.ok(replyBody.indexOf("LOOKGOOD_MISSED_REPLY_V1") === 0);
+    const reply = CMS.parseMissedReplyIssue("[missed] reply 12", replyBody);
+    assert.strictEqual(reply.post, "12");
+    assert.strictEqual(reply.contact, "@alex");
+    assert.strictEqual(CMS.isMissedReplyTitle("[missed] reply 12"), true);
+    assert.strictEqual(CMS.isMissedReplyTitle("[missed]"), false);
+    assert.strictEqual(CMS.isMissedReplyTitle("[guestbook]"), false);
+    return CMS.deleteMissedEntry("t", "_posts/hack.md", "sha").then(
+      function () {
+        throw new Error("should reject");
+      },
+      function (err) {
+        assert.ok(/not a missed connections file/i.test(err.message));
+      }
+    );
+  })
+);
+
+tests.push(
+  test("missed reply inbox joins the original issue contact and can close", function () {
+    const calls = [];
+    const fakeFetch = function (url, opts) {
+      const path = url.replace("https://api.github.com", "");
+      calls.push({ path: path, method: opts.method || "GET" });
+      let data;
+      if (path.indexOf("/issues?state=open") !== -1) {
+        data = [
+          {
+            number: 20,
+            title: "[missed] reply 12",
+            body: CMS.buildMissedReplyIssueBody({
+              post: "12",
+              name: "Alex",
+              note: "I had the sequin top",
+              contact: "@alex"
+            })
+          },
+          { number: 99, title: "Some other issue", body: "nope", pull_request: { url: "x" } }
+        ];
+      } else if (path.indexOf("/issues/12") !== -1 && (opts.method || "GET") === "GET") {
+        data = {
+          number: 12,
+          title: "[missed]",
+          body: CMS.buildMissedIssueBody({
+            name: "Sam",
+            night: "2008 Night",
+            you: "sequin",
+            me: "stripes",
+            note: "hi",
+            contact: "@sam.hide"
+          })
+        };
+      } else if (path.indexOf("/issues/20") !== -1 && opts.method === "PATCH") {
+        data = { number: 20, state: "closed" };
+      } else {
+        data = {};
+      }
+      return Promise.resolve({
+        ok: true,
+        text: function () {
+          return Promise.resolve(JSON.stringify(data));
+        }
+      });
+    };
+    return CMS.listMissedReplies("fake-token-for-test", fakeFetch).then(function (rows) {
+      assert.strictEqual(rows.length, 1);
+      assert.strictEqual(rows[0].from, "Alex");
+      assert.strictEqual(rows[0].post, "12");
+      assert.strictEqual(rows[0].contact, "@alex");
+      assert.strictEqual(rows[0].posterName, "Sam");
+      assert.strictEqual(rows[0].posterContact, "@sam.hide");
+      const dumped = JSON.stringify(calls);
+      assert.ok(dumped.indexOf("fake-token-for-test") === -1);
+      return CMS.closeIssue("fake-token-for-test", 20, fakeFetch);
+    }).then(function (closed) {
+      assert.strictEqual(closed.state, "closed");
+    });
+  })
+);
+
 Promise.all(tests)
   .then(function () {
     console.log("\nAll CMS tests passed.");
