@@ -43,7 +43,9 @@ a:hover{ color:#ff4bb2; }
 }
 
 .thumbgrid a{
-  display:block !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
   margin:0 !important;         /* kill old inline spacing */
   border:1px solid #222 !important;
 }
@@ -166,7 +168,9 @@ a.h.is-active{
 }
 
 .thumbgrid a{
-  display:block;
+  display:flex;
+  align-items:center;
+  justify-content:center;
   border:1px solid #222;
 }
 
