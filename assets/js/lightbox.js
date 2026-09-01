@@ -18,9 +18,12 @@
   overlay.innerHTML =
     '<div id="lbFrame">' +
       '<a href="#" id="lbClose">×</a>' +
-      '<a href="#" id="lbPrev">‹</a>' +
-      '<img id="lbImg" src="" alt="">' +
-      '<a href="#" id="lbNext">›</a>' +
+      '<div id="lbStage">' +
+        '<a href="#" id="lbPrev">‹</a>' +
+        '<img id="lbImg" src="" alt="">' +
+        '<a href="#" id="lbNext">›</a>' +
+      '</div>' +
+      '<a href="" id="lbDownload" download>Download this photo</a>' +
       '<div id="lbCount"></div>' +
     '</div>';
 
@@ -30,7 +33,14 @@
   var lbPrev = q('#lbPrev', overlay);
   var lbNext = q('#lbNext', overlay);
   var lbClose = q('#lbClose', overlay);
+  var lbDownload = q('#lbDownload', overlay);
   var lbCount = q('#lbCount', overlay);
+
+  function fileNameFromHref(href) {
+    var name = String(href || '').split('?')[0].split('#')[0].split('/').pop();
+    try { name = decodeURIComponent(name); } catch (e) {}
+    return name || 'image';
+  }
 
   var currentGroup = null;
   var currentIndex = 0;
@@ -43,6 +53,8 @@
     var href = arr[currentIndex].getAttribute('href');
 
     lbImg.src = href;
+    lbDownload.href = href;
+    lbDownload.setAttribute('download', fileNameFromHref(href));
     lbCount.innerHTML = (currentIndex + 1) + ' / ' + arr.length;
 
     overlay.style.display = 'block';
@@ -52,6 +64,7 @@
   function close() {
     overlay.style.display = 'none';
     lbImg.src = '';
+    lbDownload.href = '';
     document.body.className = document.body.className.replace(/\blbNoScroll\b/g, '').trim();
   }
 
@@ -75,6 +88,7 @@
   lbPrev.addEventListener('click', function (e) { e.preventDefault(); step(-1); });
   lbNext.addEventListener('click', function (e) { e.preventDefault(); step(1); });
   lbClose.addEventListener('click', function (e) { e.preventDefault(); close(); });
+  lbDownload.addEventListener('click', function (e) { e.stopPropagation(); });
 
   overlay.addEventListener('click', function (e) {
     // click outside image closes

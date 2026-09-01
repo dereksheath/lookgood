@@ -250,9 +250,16 @@ ul.list li{
   text-align:center;
 }
 
-#lbImg{
+#lbStage{
+  position:relative;
+  display:inline-block;
   max-width:100%;
-  max-height:85vh;
+}
+
+#lbImg{
+  display:block;
+  max-width:100%;
+  max-height:75vh;
   border:1px solid #222;
 }
 
@@ -278,8 +285,20 @@ ul.list li{
   font-size:34px;
 }
 
-#lbCount{
+#lbDownload{
+  display:block;
   margin-top:8px;
+  font:12px/16px Verdana, Arial, sans-serif;
+  color:#ff4bb2;
+  text-decoration:underline;
+}
+
+#lbDownload:hover{
+  color:#fff;
+}
+
+#lbCount{
+  margin-top:6px;
   font:11px/14px "Courier New", Courier, monospace;
   color:#aaa;
 }
