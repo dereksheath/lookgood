@@ -252,6 +252,8 @@ ul.list li{
   max-width:980px;
   text-align:center;
   touch-action:none;
+  padding-top:44px;
+  box-sizing:border-box;
 }
 
 #lbStage{
@@ -263,7 +265,8 @@ ul.list li{
 #lbViewport{
   overflow:hidden;
   width:100%;
-  height:75vh;
+  height:calc(75vh - 44px);
+  max-height:calc(100vh - 160px);
   position:relative;
   background:#000;
   touch-action:none;
@@ -291,7 +294,7 @@ ul.list li{
   touch-action:auto;
 }
 
-#lbPrev, #lbNext, #lbClose{
+#lbPrev, #lbNext{
   position:absolute;
   top:50%;
   transform:translateY(-50%);
@@ -307,10 +310,17 @@ ul.list li{
 #lbNext{ right:-10px; }
 
 #lbClose{
-  top:-10px;
-  right:-10px;
-  transform:none;
-  font-size:34px;
+  position:absolute;
+  top:0;
+  right:0;
+  z-index:3;
+  font-family: Arial, sans-serif;
+  font-size:36px;
+  line-height:1;
+  color:#fff;
+  text-decoration:none;
+  padding:0 4px 10px 16px;
+  opacity:0.95;
 }
 
 #lbDownload{
