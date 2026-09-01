@@ -7,6 +7,7 @@ on:
 permissions:
   contents: write
   issues: write
+  actions: write
 
 concurrency:
   group: guestbook-ingest
@@ -37,17 +38,27 @@ jobs:
           git config user.name "lookgood-bot"
           git config user.email "actions@users.noreply.github.com"
 
+          published=0
           if git status --porcelain | grep -q "_guestbook/"; then
             git add _guestbook
             git commit -m "Guestbook: add comment"
             i=0
             while [ "$i" -lt 3 ]; do
-              git pull --rebase origin main && git push origin HEAD:main && break
+              if git pull --rebase origin main && git push origin HEAD:main; then
+                published=1
+                break
+              fi
               i=$((i + 1))
               sleep 2
             done
           else
             echo "No guestbook file to commit."
+          fi
+
+          # GITHUB_TOKEN pushes do not start other workflows. Kick Deploy
+          # site so the new comment is actually on the public page.
+          if [ "$published" = "1" ]; then
+            gh workflow run pages.yml --ref main
           fi
 
           gh issue close "$ISSUE_NUMBER" --repo "$GITHUB_REPOSITORY" >/dev/null
