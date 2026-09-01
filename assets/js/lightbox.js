@@ -59,6 +59,27 @@
   var trackingTouch = false;
   var dragging = false;
   var suppressClick = false;
+  var suppressTimer = null;
+
+  function suppressGhostClick() {
+    suppressClick = true;
+    if (suppressTimer) clearTimeout(suppressTimer);
+    suppressTimer = setTimeout(function () {
+      suppressClick = false;
+      suppressTimer = null;
+    }, 350);
+  }
+
+  function consumeGhostClick(e) {
+    if (!suppressClick) return false;
+    suppressClick = false;
+    if (suppressTimer) {
+      clearTimeout(suppressTimer);
+      suppressTimer = null;
+    }
+    if (e) e.preventDefault();
+    return true;
+  }
 
   function resetImgOffset(animate) {
     lbImg.style.transition = animate ? "transform 0.15s ease-out" : "none";
@@ -110,25 +131,22 @@
 
   lbPrev.addEventListener("click", function (e) {
     e.preventDefault();
-    if (suppressClick) return;
+    if (consumeGhostClick(e)) return;
     step(-1);
   });
   lbNext.addEventListener("click", function (e) {
     e.preventDefault();
-    if (suppressClick) return;
+    if (consumeGhostClick(e)) return;
     step(1);
   });
   lbClose.addEventListener("click", function (e) {
     e.preventDefault();
-    if (suppressClick) return;
+    if (consumeGhostClick(e)) return;
     close();
   });
 
   overlay.addEventListener("click", function (e) {
-    if (suppressClick) {
-      e.preventDefault();
-      return;
-    }
+    if (consumeGhostClick(e)) return;
     // click outside image closes
     if (e.target === overlay) close();
   });
@@ -148,6 +166,10 @@
     if (!isOpen() || e.touches.length !== 1) return;
     trackingTouch = true;
     dragging = false;
+    if (suppressTimer) {
+      clearTimeout(suppressTimer);
+      suppressTimer = null;
+    }
     suppressClick = false;
     touchStartX = e.touches[0].clientX;
     touchStartY = e.touches[0].clientY;
@@ -167,7 +189,7 @@
         return;
       }
       dragging = true;
-      suppressClick = true;
+      suppressGhostClick();
     }
 
     e.preventDefault();
@@ -185,7 +207,7 @@
     dragging = false;
 
     if (dir) {
-      suppressClick = true;
+      suppressGhostClick();
       step(dir);
       return;
     }
