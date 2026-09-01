@@ -278,15 +278,24 @@ ul.list li{
   will-change:transform;
 }
 
+.lbPane{
+  height:100%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  box-sizing:border-box;
+}
+
 .lbSlide{
   display:block;
-  height:100%;
-  object-fit:contain;
-  object-position:center;
+  max-width:100%;
+  max-height:100%;
+  width:auto;
+  height:auto;
   border:1px solid #222;
   box-sizing:border-box;
-  background:#000;
-  /* Hit the real <img> so phones can long-press save and desktops can right-click save. */
+  /* Hit the real <img> so phones can long-press save and desktops can right-click save.
+     Keep the element's box the same shape as the photo so a hold does not warp it. */
   pointer-events:auto;
   -webkit-touch-callout:default;
   -webkit-user-select:none;
