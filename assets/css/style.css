@@ -105,6 +105,7 @@ a:hover{ color:#ff4bb2; }
   border-radius: 0;
 
   cursor: pointer;
+  touch-action: manipulation;
 
   appearance: none;
   -webkit-appearance: none;

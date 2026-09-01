@@ -13,12 +13,20 @@
 
     var player = Mixcloud.PlayerWidget(iframe);
     var isPlaying = false;
+    var playerReady = false;
+
+    function toggle() {
+      if (!playerReady) return;
+      if (isPlaying) player.pause();
+      else player.play();
+    }
+
+    // Bind immediately so a tap is not lost if Mixcloud is still starting,
+    // and so the handler stays on the button after the chrome is relocated.
+    playButton.addEventListener("click", toggle);
 
     player.ready.then(function () {
-      playButton.addEventListener("click", function () {
-        if (isPlaying) player.pause();
-        else player.play();
-      });
+      playerReady = true;
 
       player.events.play.on(function () {
         isPlaying = true;
