@@ -1,3 +1,19 @@
+<script>
+(function () {
+  var host = location.hostname;
+  if (
+    location.protocol === "http:" &&
+    (host === "lookgood.party" || host === "www.lookgood.party")
+  ) {
+    location.replace(
+      "https://lookgood.party" +
+        location.pathname +
+        location.search +
+        location.hash
+    );
+  }
+})();
+</script>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="stylesheet" href="{{ '/assets/css/style.css' | relative_url }}?v={{ site.time | date: '%s' }}">

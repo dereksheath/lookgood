@@ -18,7 +18,7 @@
         <a class="lb"
            href="{{ '/img/' | append: include.gallery_dir | append: '/full/' | append: file.name | relative_url }}"
            data-group="{{ include.gallery_dir }}">
-          <img src="{{ file.path | relative_url }}" alt="">
+          <img src="{{ file.path | relative_url }}" alt="" loading="lazy" decoding="async">
         </a>
       {% endif %}
     {% endif %}
