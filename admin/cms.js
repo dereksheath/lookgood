@@ -1,4 +1,4 @@
-/* Private posting helper for lookgood.party
+/* Private posting helper for lookgoodparty.com
    GitHub tokens and passwords are never written to the repo. */
 (function (global) {
   var CMS = {};
@@ -6,7 +6,7 @@
   CMS.REPO_OWNER = "dereksheath";
   CMS.REPO_NAME = "lookgood";
   CMS.BRANCH = "main";
-  CMS.SITE_URL = "https://lookgood.party";
+  CMS.SITE_URL = "https://lookgoodparty.com";
   CMS.TIMEZONE = "America/Los_Angeles";
 
   CMS.TOKEN_KEY = "lookgood_github_token";

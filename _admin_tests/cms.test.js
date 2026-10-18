@@ -368,7 +368,7 @@ tests.push(
     assert.ok(/Add photos to gallery/.test(plan.commitMessage));
     assert.strictEqual(
       plan.postUrl,
-      "https://lookgood.party/2026/01/23/el-cid-2006-night/"
+      "https://lookgoodparty.com/2026/01/23/el-cid-2006-night/"
     );
     const files = CMS.filesFromPlan(plan, null, ["YQ==", "Yg=="]);
     assert.deepStrictEqual(
