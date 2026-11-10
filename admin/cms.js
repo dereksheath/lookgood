@@ -14,7 +14,7 @@
 
   /* sha256("lookgood.party:" + password). Password is not stored in this file. */
   CMS.PASSWORD_HASH =
-    "b9604090647e4418a867a3cace2ba2689cbbeab3006fc44a147e8347b0b21411";
+    "97bf1ad4a42fa3bc8f4158322ec21e3d86985a2ebe797b2e5e7143315c271ec8";
 
   CMS.ALLOWED_IMAGE_EXT = { jpg: true, jpeg: true, png: true };
 
